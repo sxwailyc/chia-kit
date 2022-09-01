@@ -30,7 +30,7 @@ def _get_tree_files(_dir, suffixs=[]):
         for item in walker:
             for fileName in item[2]:
                 filePath = os.path.join(item[0], fileName)
-                if os.path.isfile(filePath):
+                if os.path.isfile(filePath) and is_matcher(filePath, suffixs):
                     yield filePath
 
 
@@ -102,6 +102,7 @@ class PlotCleaner:
                     else:
                         ids[_id] = filename
 
+        print("find %s duplicate plot files." % len(duplicate_ids))
         for k, v in duplicate_ids.items():
             log("duplicate plot,id[%s], files%s" % (k, v))
 
