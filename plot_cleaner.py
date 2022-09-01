@@ -104,7 +104,30 @@ class PlotCleaner:
 
         print("find %s duplicate plot files." % len(duplicate_ids))
         for k, v in duplicate_ids.items():
-            log("duplicate plot,id[%s], files%s" % (k, v))
+            print("%sduplicate plot,id[%s]" % ('-' * 5, k))
+            for dfile in v:
+                print("%s%s %sGb" % ('+' * 10, dfile, get_file_size(dfile)))
+
+        if self.delete:
+            for k, v in duplicate_ids.items():
+                remove_count = len(v) - 1
+                removed_names = set()
+                #remove the bad plot first
+                for dfile in v:
+                    size = get_file_size(dfile)
+                    if size < self.plot_min_size:
+                        print("remove %s" % dfile)
+                        removed_names.add(dfile)
+                        os.remove(dfile)
+
+                if len(removed_names) < remove_count:
+                    for dfile in v:
+                        if dfile not in removed_names:
+                            print("remove %s" % dfile)
+                            removed_names.add(dfile)
+                            os.remove(dfile)
+                        if len(removed_names) >= remove_count:
+                            break
 
     def find_bad_plot(self):
         bad_plots = {}
@@ -125,6 +148,7 @@ class PlotCleaner:
             mtime = v['time']
             print("%s -> %sGB %s" % (k, size, mtime))
             if self.delete:
+                print("remove %s" % k)
                 os.remove(k)
 
 
