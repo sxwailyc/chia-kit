@@ -59,6 +59,11 @@ def get_file_size(file_path):
     return round(size, 2)
 
 
+def timestamp_to_time(timestamp):
+    time_struct = time.localtime(timestamp)
+    return time.strftime('%Y-%m-%d %H:%M:%S', time_struct)
+
+
 class PlotCleaner:
     BAD_PLOT = "bad_plot"
     DUPLICATE_PLOT = "duplicate_plot"
@@ -108,11 +113,16 @@ class PlotCleaner:
                 for filename in files:
                     size = get_file_size(filename)
                     if size < self.plot_min_size:
-                        bad_plots[filename] = size
+                        bad_plots[filename] = {
+                           'size': size,
+                           'time': timestamp_to_time(os.path.getmtime(filename))
+                        }
 
         print("find %s bad plot files." % len(bad_plots))
         for k, v in bad_plots.items():
-            print("%s -> %sGB" % (k, v))
+            size = v['size']
+            mtime = v['time']
+            print("%s -> %sGB %s" % (k, size, mtime))
             if self.delete:
                 os.remove(k)
 
