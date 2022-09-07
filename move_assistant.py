@@ -126,7 +126,7 @@ class MoveAssistant:
             free = get_free(hdd_dir)
             enable = free >= self.minimal_space
         else:
-            files = get_files(hdd_dir)
+            files = get_files(os.path.join(hdd_dir, self.sub_dir_name))
             free = (max_file_count - len(files)) * 102
             enable = free > 0
         return enable, free
