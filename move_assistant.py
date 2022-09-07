@@ -80,6 +80,21 @@ def is_need_move(time_diff):
     return False
 
 
+def parse_hdd_dir(hdd_dir_list):
+    hdd_dir_infos = []
+    for s in hdd_dir_list:
+        max_file_count = 0
+        hdd_dir = None
+        if s.find("=") > 0:
+            max_file_count = int(s.split("=")[1])
+            hdd_dir = s.split("=")[0]
+        hdd_dir_infos.append({
+            'hdd_dir': hdd_dir,
+            'max_file_count': max_file_count
+        })
+    return hdd_dir_infos
+
+
 class MoveAssistant:
     ORDER = 1
     AVG = 2
@@ -88,7 +103,7 @@ class MoveAssistant:
                  move_strategy=1):
         self.max_concurrency = max_concurrency
         self.temp_dir = temp_dir
-        self.hdd_dir_list = hdd_dir_list
+        self.hdd_dir_info_list = parse_hdd_dir(hdd_dir_list)
         self.sub_dir_name = sub_dir_name
         self.scan_interval = scan_interval
         self.minimal_space = minimal_space
@@ -104,13 +119,25 @@ class MoveAssistant:
         log("add move task success:%s" % plot_name)
         return True
 
+    def is_hdd_dir_enable(self, hdd_dir, max_file_count):
+        if max_file_count == 0:
+            free = get_free(hdd_dir)
+            enable = free >= self.minimal_space
+        else:
+            files = get_files(hdd_dir)
+            free = (max_file_count - len(files)) * 102
+            enable = free > 0
+        return enable, free
+
     def select_one_hdd(self):
         disks = []
-        for hdd_dir in self.hdd_dir_list:
+        for hdd_dir_info in self.hdd_dir_info_list:
+            hdd_dir = hdd_dir_info['hdd_dir']
+            max_file_count = hdd_dir_info['max_file_count']
             if hdd_dir in self.current_dirs:
                 continue
-            free = get_free(hdd_dir)
-            if free < self.minimal_space:
+            enable, free = self.is_hdd_dir_enable(hdd_dir, max_file_count)
+            if not enable:
                 continue
             disks.append({
                 'hdd_dir': hdd_dir,
