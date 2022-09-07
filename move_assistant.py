@@ -198,7 +198,7 @@ if __name__ == '__main__':
     parser.add_argument("--scan-interval", metavar="", type=int, help="scan interval, default is 30 seconds",
                         default=30)
     parser.add_argument("--minimal-space", metavar="", type=int, help="minimal space need, default is 103GB",
-                        default=30)
+                        default=103)
     parser.add_argument("--move-strategy", metavar="", type=int, help="move strategy 1. by order 2. avg, default is 1",
                         default=1)
 
