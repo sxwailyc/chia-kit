@@ -88,6 +88,8 @@ def parse_hdd_dir(hdd_dir_list):
         if s.find("=") > 0:
             max_file_count = int(s.split("=")[1])
             hdd_dir = s.split("=")[0]
+        else:
+            hdd_dir = s
         hdd_dir_infos.append({
             'hdd_dir': hdd_dir,
             'max_file_count': max_file_count
