@@ -17,7 +17,7 @@ This script is for move plot files from ssd to hdd.
 
 positional arguments:
   temp_dir            chia plot temp dir
-  hdd_dir_list        chia hdd dir list, split by comma
+  hdd_dir_list        chia hdd dir list, split by comma #机械盘目录列表，逗号分隔,  /mnt/chia01,/mnt/chia02, 可以指定该目录最大存放文件数，比如 /mnt/chia01=147,/mnt/chia02=128
 
 optional arguments:
   -h, --help          show this help message and exit
