@@ -205,7 +205,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    temp_dir_list = args.temp_dir.split(",")
+    temp_dir_list = args.temp_dir_list.split(",")
     hdd_dir_list = args.hdd_dir_list.split(",")
     max_concurrency = args.max_concurrency
     sub_dir_name = args.sub_dir_name
