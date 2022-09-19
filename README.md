@@ -11,12 +11,12 @@ python3 move_assistant.py 临时目录  机械盘1,机械盘2,机械盘3.....
 ##### 1.2 完整参数列表
 
 ```commandline
-usage: move_assistant.py [-h] [--max-concurrency] [--sub-dir-name] [--scan-interval] [--minimal-space] [--move-strategy] temp_dir hdd_dir_list
+usage: move_assistant.py [-h] [--max-concurrency] [--sub-dir-name] [--scan-interval] [--minimal-space] [--move-strategy] temp_dir_list hdd_dir_list
 
 This script is for move plot files from ssd to hdd.
 
 positional arguments:
-  temp_dir            chia plot temp dir
+  temp_dir_list       chia plot temp dir list, split by comma #临时盘目录列表，逗号分隔,  
   hdd_dir_list        chia hdd dir list, split by comma #机械盘目录列表，逗号分隔,  /mnt/chia01,/mnt/chia02, 可以指定该目录最大存放文件数，比如 /mnt/chia01=147,/mnt/chia02=128
 
 optional arguments:

@@ -101,10 +101,10 @@ class MoveAssistant:
     ORDER = 1
     AVG = 2
 
-    def __init__(self, temp_dir, hdd_dir_list, sub_dir_name='', scan_interval=30, max_concurrency=5, minimal_space=103,
+    def __init__(self, temp_dir_list, hdd_dir_list, sub_dir_name='', scan_interval=30, max_concurrency=5, minimal_space=103,
                  move_strategy=1):
         self.max_concurrency = max_concurrency
-        self.temp_dir = temp_dir
+        self.temp_dir_list = temp_dir_list
         self.hdd_dir_info_list = parse_hdd_dir(hdd_dir_list)
         self.sub_dir_name = sub_dir_name
         self.scan_interval = scan_interval
@@ -157,23 +157,24 @@ class MoveAssistant:
 
     def main(self):
 
-        files = get_files(self.temp_dir)
-        if not files:
-            log("get 0 files from temp dir:[%s]" % self.temp_dir)
-        now = time.time()
-        for file in files:
-            if file in self.current_files:
-                continue
-            modify_time = os.path.getmtime(file)
-            time_diff = now - modify_time
-            if is_need_move(time_diff):
-                target = self.select_one_hdd()
-                if not target:
-                    return
-                else:
-                    dist = os.path.join(target, self.sub_dir_name)
-                    log("move to:%s" % dist)
-                    self.add_move_task(file, target)
+        for temp_dir in self.temp_dir_list:
+            files = get_files(temp_dir)
+            if not files:
+                log("get 0 files from temp dir:[%s]" % temp_dir)
+            now = time.time()
+            for file in files:
+                if file in self.current_files:
+                    continue
+                modify_time = os.path.getmtime(file)
+                time_diff = now - modify_time
+                if is_need_move(time_diff):
+                    target = self.select_one_hdd()
+                    if not target:
+                        return
+                    else:
+                        dist = os.path.join(target, self.sub_dir_name)
+                        log("move to:%s" % dist)
+                        self.add_move_task(file, target)
 
     def start(self):
         log('start')
@@ -191,7 +192,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="""
        This script is for move plot files from ssd to hdd.
     """)
-    parser.add_argument("temp_dir", help="chia plot temp dir")
+    parser.add_argument("temp_dir_list", help="chia plot temp dir list, , split by comma")
     parser.add_argument("hdd_dir_list", help="chia hdd dir list, split by comma")
     parser.add_argument("--max-concurrency", metavar="", type=int, help="max concurrency, default is 5", default=5)
     parser.add_argument("--sub-dir-name", metavar="", help="sub dir name, default is empty", default='')
@@ -204,12 +205,12 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    temp_dir = args.temp_dir
+    temp_dir_list = args.temp_dir.split(",")
     hdd_dir_list = args.hdd_dir_list.split(",")
     max_concurrency = args.max_concurrency
     sub_dir_name = args.sub_dir_name
     scan_interval = args.scan_interval
     minimal_space = args.minimal_space
     move_strategy = args.move_strategy
-    assistant = MoveAssistant(temp_dir, hdd_dir_list, sub_dir_name, scan_interval, max_concurrency, minimal_space)
+    assistant = MoveAssistant(temp_dir_list, hdd_dir_list, sub_dir_name, scan_interval, max_concurrency, minimal_space)
     assistant.start()
