@@ -55,3 +55,28 @@ options:
   -m , --plot-min-size 
                         plot file min size, less than this value be considered for bad plot, default is 101Gb //plot 文件大小最小值，小于该值认为是不合法的plot文件
 ```
+
+#### 3. disk_util.py  自动挂载硬盘
+
+##### 3.1 使用方法
+```commandline
+python3 disk_util.py 动作
+```
+
+##### 3.2 完整参数列表
+
+```commandline
+usage: disk_util.py [-h] [-d DIR] [-p PREFIX] [-e] {mount,mkfs}
+
+This script is mount disk or make file system.
+
+positional arguments:
+  {mount,mkfs}          mount: mount disk; mkfs: make file system
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DIR, --dir DIR     mount dir, defautl is /mnt/  //挂载目录，默认为 /mnt/
+  -p PREFIX, --prefix PREFIX        //目录前缀，默认为空，比如可以为 chia, 则挂载目录依次为 /mnt/chia01 /mnt/chia02
+                        mount sub foler preifx, default is empty
+  -e, --execute         whether perform operation, default is Flase   //是否执行，默认为否，只会输出挂载命令
+```
