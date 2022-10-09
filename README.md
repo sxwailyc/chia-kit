@@ -66,12 +66,12 @@ python3 disk_util.py 动作
 ##### 3.2 完整参数列表
 
 ```commandline
-usage: disk_util.py [-h] [-d DIR] [-p PREFIX] [-e] {mount,mkfs}
+usage: disk_util.py [-h] [-d DIR] [-p PREFIX] [-e] {mount,mkfs,add_dir}
 
 This script is mount disk or make file system.
 
 positional arguments:
-  {mount,mkfs}          mount: mount disk; mkfs: make file system
+  {mount,mkfs,add_dir}          mount: mount disk; mkfs: make file system; add_dir: add chia dir
 
 optional arguments:
   -h, --help            show this help message and exit

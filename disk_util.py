@@ -51,7 +51,7 @@ def get_chia_dirs(base_dir):
                         chia_dirs.append(file)
                         break
 
-    return chia_dirs
+    return sorted(chia_dirs)
 
 
 def get_file_systems():
