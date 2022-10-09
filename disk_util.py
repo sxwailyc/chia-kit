@@ -39,9 +39,17 @@ def get_chia_dirs(base_dir):
         files = os.listdir(name)
         for file in files:
             file = os.path.join(name, file)
-            if os.path.isfile(file) and name.endswith(".plot"):
-                chia_dirs.append(name)
-                break
+            if os.path.isfile(file):
+                if file.endswith(".plot"):
+                    chia_dirs.append(name)
+                    break
+            else:
+                sub_files = os.listdir(file)
+                for sub_file in sub_files:
+                    sub_file = os.path.join(file, sub_file)
+                    if os.path.isfile(sub_file) and sub_file.endswith(".plot"):
+                        chia_dirs.append(file)
+                        break
 
     return chia_dirs
 
@@ -103,7 +111,7 @@ class DiskUtil:
             self.mount()
         elif self.action == DiskUtil.MKFS:
             self.mkfs()
-        elif self.action == DiskUtil.MKFS:
+        elif self.action == DiskUtil.ADD_DIR:
             self.add_dir()
         else:
             log("unknow action:%s" % self.action)
@@ -134,7 +142,6 @@ class DiskUtil:
 
     def add_dir(self):
         chia_dirs = get_chia_dirs(self.folder)
-        seq = 1
         for chia_dir in chia_dirs:
             cmd = "chia plots add -d %s" % chia_dir
             print(cmd)
@@ -150,7 +157,7 @@ if __name__ == '__main__':
            This script is mount disk or make file system.
         """)
     parser.add_argument("action", help="mount: mount disk; mkfs: make file system; add_dir: add chia dir ",
-                        choices=['mount', 'mkfs'])
+                        choices=['mount', 'mkfs', 'add_dir'])
     parser.add_argument("-d", "--dir", help="mount dir, defautl is /mnt/", default="/mnt/")
     parser.add_argument("-p", "--prefix", help="mount sub foler preifx, default is empty", default="")
     parser.add_argument("-e", "--execute", action="store_true",
