@@ -3,7 +3,6 @@
 
 import argparse
 import os
-import time
 from datetime import datetime
 
 
@@ -26,6 +25,25 @@ def get_mounteds():
         disks.append(line)
 
     return disks
+
+
+def get_chia_dirs(base_dir):
+    chia_dirs = []
+    if not dir or not os.path.isdir(base_dir):
+        return []
+    names = os.listdir(base_dir)
+    for name in names:
+        name = os.path.join(base_dir, name)
+        if not os.path.isdir(name):
+            continue
+        files = os.listdir(name)
+        for file in files:
+            file = os.path.join(name, file)
+            if os.path.isfile(file) and name.endswith(".plot"):
+                chia_dirs.append(name)
+                break
+
+    return chia_dirs
 
 
 def get_file_systems():
@@ -72,6 +90,7 @@ def get_mount_type(ftype):
 class DiskUtil:
     MOUNT = "mount"
     MKFS = "mkfs"
+    ADD_DIR = "add_dir"
 
     def __init__(self, action, folder, prefix, execute=False):
         self.action = action
@@ -84,6 +103,8 @@ class DiskUtil:
             self.mount()
         elif self.action == DiskUtil.MKFS:
             self.mkfs()
+        elif self.action == DiskUtil.MKFS:
+            self.add_dir()
         else:
             log("unknow action:%s" % self.action)
 
@@ -105,11 +126,20 @@ class DiskUtil:
                 os.makedirs(mounted_point)
 
             mount_cmd = "mount -t %s /dev/disk/by-uuid/%s %s%s%s" % (
-            get_mount_type(ftype), uuid, self.folder, self.prefix, format_number(seq))
+                get_mount_type(ftype), uuid, self.folder, self.prefix, format_number(seq))
             seq += 1
             print(mount_cmd)
             if self.execute:
                 os.system(mount_cmd)
+
+    def add_dir(self):
+        chia_dirs = get_chia_dirs(self.folder)
+        seq = 1
+        for chia_dir in chia_dirs:
+            cmd = "chia plots add -d %s" % chia_dir
+            print(cmd)
+            if self.execute:
+                os.system(cmd)
 
     def mkfs(self):
         pass
@@ -119,7 +149,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="""
            This script is mount disk or make file system.
         """)
-    parser.add_argument("action", help="mount: mount disk; mkfs: make file system ",
+    parser.add_argument("action", help="mount: mount disk; mkfs: make file system; add_dir: add chia dir ",
                         choices=['mount', 'mkfs'])
     parser.add_argument("-d", "--dir", help="mount dir, defautl is /mnt/", default="/mnt/")
     parser.add_argument("-p", "--prefix", help="mount sub foler preifx, default is empty", default="")
