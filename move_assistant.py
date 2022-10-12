@@ -212,5 +212,5 @@ if __name__ == '__main__':
     scan_interval = args.scan_interval
     minimal_space = args.minimal_space
     move_strategy = args.move_strategy
-    assistant = MoveAssistant(temp_dir_list, hdd_dir_list, sub_dir_name, scan_interval, max_concurrency, minimal_space)
+    assistant = MoveAssistant(temp_dir_list, hdd_dir_list, sub_dir_name, scan_interval, max_concurrency, minimal_space, move_strategy)
     assistant.start()
