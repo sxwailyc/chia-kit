@@ -178,9 +178,9 @@ class DiskUtil:
             if self.execute:
                 os.system(cmd)
 
-    def count_plots(self):
+    def count_plot(self):
         count = get_chia_count(self.folder)
-        log("path[%s], has %s plot files" % (self.folder, count))
+        log("path[%s] has %s plot files" % (self.folder, count))
 
     def mkfs(self):
         pass
