@@ -54,6 +54,33 @@ def get_chia_dirs(base_dir):
     return sorted(chia_dirs)
 
 
+def get_chia_count(base_dir):
+    count = 0
+    if not dir or not os.path.isdir(base_dir):
+        return count
+    names = os.listdir(base_dir)
+    for name in names:
+        name = os.path.join(base_dir, name)
+        if os.path.isfile(name):
+            if name.endswith(".plot"):
+                count += 1
+        else:
+            files = os.listdir(name)
+            for file in files:
+                file = os.path.join(name, file)
+                if os.path.isfile(file):
+                    if file.endswith(".plot"):
+                        count += 1
+                else:
+                    sub_files = os.listdir(file)
+                    for sub_file in sub_files:
+                        sub_file = os.path.join(file, sub_file)
+                        if os.path.isfile(sub_file) and sub_file.endswith(".plot"):
+                            count += 1
+
+    return count
+
+
 def get_file_systems():
     fss = []
     command = 'blkid | grep " UUID"'
@@ -99,6 +126,7 @@ class DiskUtil:
     MOUNT = "mount"
     MKFS = "mkfs"
     ADD_DIR = "add_dir"
+    COUNT_PLOT = "count_plot"
 
     def __init__(self, action, folder, prefix, execute=False):
         self.action = action
@@ -113,6 +141,8 @@ class DiskUtil:
             self.mkfs()
         elif self.action == DiskUtil.ADD_DIR:
             self.add_dir()
+        elif self.action == DiskUtil.COUNT_PLOT:
+            self.count_plot()
         else:
             log("unknow action:%s" % self.action)
 
@@ -148,6 +178,10 @@ class DiskUtil:
             if self.execute:
                 os.system(cmd)
 
+    def count_plots(self):
+        count = get_chia_count(self.folder)
+        log("path[%s], has %s plot files" % (self.folder, count))
+
     def mkfs(self):
         pass
 
@@ -156,8 +190,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="""
            This script is mount disk or make file system.
         """)
-    parser.add_argument("action", help="mount: mount disk; mkfs: make file system; add_dir: add chia dir ",
-                        choices=['mount', 'mkfs', 'add_dir'])
+    parser.add_argument("action",
+                        help="mount: mount disk; mkfs: make file system; add_dir: add chia dir, count_plot: count plot files ",
+                        choices=['mount', 'mkfs', 'add_dir', 'count_plot'])
     parser.add_argument("-d", "--dir", help="mount dir, defautl is /mnt/", default="/mnt/")
     parser.add_argument("-p", "--prefix", help="mount sub foler preifx, default is empty", default="")
     parser.add_argument("-e", "--execute", action="store_true",
