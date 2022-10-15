@@ -151,6 +151,7 @@ class DiskUtil:
             log("must run by root")
 
         fss = get_file_systems()
+        fss = sorted(fss, key=lambda a: a['type'], reverse=False)
         mounted_disks = get_mounteds()
         seq = 1
         for fs in fss:
