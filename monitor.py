@@ -168,6 +168,8 @@ def main(secret, host_name):
         all_plot_count += plot_count
         all_size += size
         all_usage += usage
+        disk_info["usage"] = usage
+        disk_info["mount_point"] = mount_point
 
     machine_info = {
         'host_name': host_name,
