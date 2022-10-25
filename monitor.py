@@ -39,6 +39,7 @@ def call_hdsentinel():
                     "device": device,
                     "serial_no": serial_no
                 })
+                model_id =  ""
             device = get_value(line)
         if line.startswith("HDD Model ID"):
             model_id = get_value(line)
@@ -50,6 +51,16 @@ def call_hdsentinel():
             temperature = format_temperature(get_value(line))
         if line.startswith("Health"):
             health = format_health(get_value(line))
+
+    if model_id:
+        disks.append({
+            "model_id": model_id,
+            "size": size,
+            "temperature": temperature,
+            "health": health,
+            "device": device,
+            "serial_no": serial_no
+        })
 
     return disks
 
@@ -157,12 +168,15 @@ def main(secret, host_name):
     all_size = 0
     all_usage = 0
     all_plot_count = 0
+    ndisk_infos = []
     for disk_info in disk_infos:
         device = disk_info['device']
         size = disk_info['size']
         usage_info = usage_infos.get(device, {})
-        usage = usage_info.get(device, 0)
-        mount_point = usage_info.get(device, "")
+        if not usage_info:
+            continue
+        usage = usage_info.get('usage', 0)
+        mount_point = usage_info.get('mount_point', "")
         plot_count = get_chia_count(mount_point)
         disk_count += 1
         all_plot_count += plot_count
@@ -171,6 +185,7 @@ def main(secret, host_name):
         disk_info["usage"] = usage
         disk_info["plot_count"] = plot_count
         disk_info["mount_point"] = mount_point
+        ndisk_infos.append(disk_info)
 
     machine_info = {
         'host_name': host_name,
@@ -180,7 +195,7 @@ def main(secret, host_name):
         'all_size': all_size,
     }
 
-    report(secret, machine_info, disk_infos)
+    report(secret, machine_info, ndisk_infos)
 
 
 if __name__ == '__main__':
