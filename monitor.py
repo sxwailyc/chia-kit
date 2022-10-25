@@ -6,7 +6,7 @@ import socket
 import json
 import requests
 
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, getoutput
 
 import argparse
 import os
@@ -28,7 +28,7 @@ def call_hdsentinel():
         line = p.stdout.readline()
         if not line:
             break
-        line = line.deocde('utf-8')
+        line = line.decode('utf-8')
         if line.startswith("HDD Device"):
             if device:
                 disks.append({
@@ -56,12 +56,10 @@ def call_hdsentinel():
 
 def get_usage_infos():
     cmd = "df - lm | grep /dev/sd"
-    p = Popen(cmd, stdout=PIPE)
+    out = getoutput(cmd)
+    lines = out.split("\n")
     usage_infos = {}
-    while True:
-        line = p.stdout.readline()
-        if not line:
-            break
+    for line in lines:
         line = line.deocde('utf-8')
         datas = line.split("\t")
         device = datas[0]
