@@ -169,6 +169,7 @@ def main(secret, host_name):
         all_size += size
         all_usage += usage
         disk_info["usage"] = usage
+        disk_info["plot_count"] = plot_count
         disk_info["mount_point"] = mount_point
 
     machine_info = {
