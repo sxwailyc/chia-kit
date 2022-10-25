@@ -54,14 +54,22 @@ def call_hdsentinel():
     return disks
 
 
+def split_line(line):
+    datas = line.split(" ")
+    ndatas = []
+    for data in datas:
+        if data:
+            ndatas.append(data)
+    return ndatas
+
+
 def get_usage_infos():
-    cmd = "df - lm | grep /dev/sd"
+    cmd = "df -lm | grep /dev/sd"
     out = getoutput(cmd)
     lines = out.split("\n")
     usage_infos = {}
     for line in lines:
-        line = line.deocde('utf-8')
-        datas = line.split("\t")
+        datas = split_line(line)
         device = datas[0]
         usage = int(datas[2])
         mount_point = datas[5]
