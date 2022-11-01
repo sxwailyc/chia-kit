@@ -90,11 +90,37 @@ def parse_hdd_dir(hdd_dir_list):
             hdd_dir = s.split("=")[0]
         else:
             hdd_dir = s
-        hdd_dir_infos.append({
-            'hdd_dir': hdd_dir,
-            'max_file_count': max_file_count
-        })
+        hdd_dirs = parse_express(hdd_dir)
+        for hdd_dir in hdd_dirs:
+            hdd_dir_infos.append({
+                'hdd_dir': hdd_dir,
+                'max_file_count': max_file_count
+            })
     return hdd_dir_infos
+
+
+def parse_express(dir_name):
+    ndir_list = []
+    if dir_name.find("[") > 0 and dir_name.find("]") > 0:
+        start = dir_name.find("[")
+        end = dir_name.find("]")
+        prefix = dir_name[:start]
+        suffix = dir_name[end+1:]
+        express = dir_name[start+1:end]
+        datas = express.split("-")
+        seq_start = int(datas[0])
+        seq_end = int(datas[1])
+        for i in range(seq_start, seq_end+1):
+            ndir_list.append("%s%s%s" % (prefix, format_number(i), suffix))
+    else:
+        ndir_list.append(dir_name)
+    return ndir_list
+
+
+def format_number(i):
+    if i <= 9:
+        return '0%s' % i
+    return i
 
 
 class MoveAssistant:
