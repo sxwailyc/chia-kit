@@ -164,8 +164,12 @@ class DiskUtil:
             if not os.path.exists(mounted_point):
                 os.makedirs(mounted_point)
 
-            mount_cmd = "mount -t %s /dev/disk/by-uuid/%s %s%s%s" % (
-                get_mount_type(ftype), uuid, self.folder, self.prefix, format_number(seq))
+            param = ""
+            if ftype == 'ntfs':
+                param = '-o big_writes'
+
+            mount_cmd = "mount -t %s %s /dev/disk/by-uuid/%s %s%s%s" % (
+                get_mount_type(ftype), param, uuid, self.folder, self.prefix, format_number(seq))
             seq += 1
             print(mount_cmd)
             if self.execute:
