@@ -51,7 +51,7 @@ def get_free(disk):
     return size_to_gb(free)
 
 
-def get_files(_dir):
+def get_files(_dir, suffix='plot'):
     """get all the plot files"""
     if not _dir or not os.path.isdir(_dir):
         return []
@@ -59,7 +59,7 @@ def get_files(_dir):
     files = []
     for name in names:
         name = os.path.join(_dir, name)
-        if os.path.isfile(name) and name.endswith(".plot"):
+        if os.path.isfile(name) and name.endswith(".%s" % suffix):
             files.append(name)
     return files
 
@@ -128,7 +128,7 @@ class MoveAssistant:
     AVG = 2
 
     def __init__(self, temp_dir_list, hdd_dir_list, sub_dir_name='', scan_interval=30, max_concurrency=5, minimal_space=103,
-                 move_strategy=1):
+                 move_strategy=1, suffix='plot'):
         self.max_concurrency = max_concurrency
         self.temp_dir_list = temp_dir_list
         self.hdd_dir_info_list = parse_hdd_dir(hdd_dir_list)
@@ -136,6 +136,7 @@ class MoveAssistant:
         self.scan_interval = scan_interval
         self.minimal_space = minimal_space
         self.move_strategy = move_strategy
+        self.suffix = suffix
         self.pool = multiprocessing.Pool(max_concurrency)  # processing pool
         self.current_dirs = multiprocessing.Manager().list()
         self.current_files = multiprocessing.Manager().list()
@@ -152,7 +153,7 @@ class MoveAssistant:
             free = get_free(hdd_dir)
             enable = free >= self.minimal_space
         else:
-            files = get_files(os.path.join(hdd_dir, self.sub_dir_name))
+            files = get_files(os.path.join(hdd_dir, self.sub_dir_name), self.suffix)
             free = (max_file_count - len(files)) * 102
             enable = free > 0
         return enable, free
@@ -184,7 +185,7 @@ class MoveAssistant:
     def main(self):
 
         for temp_dir in self.temp_dir_list:
-            files = get_files(temp_dir)
+            files = get_files(temp_dir, self.suffix)
             if not files:
                 log("get 0 files from temp dir:[%s]" % temp_dir)
             now = time.time()
@@ -228,6 +229,8 @@ if __name__ == '__main__':
                         default=103)
     parser.add_argument("--move-strategy", metavar="", type=int, help="move strategy 1. by order 2. avg, default is 1",
                         default=1)
+    parser.add_argument("--suffix", metavar="", help="file suffix default is plot",
+                        default='plot')
 
     args = parser.parse_args()
 
@@ -238,5 +241,6 @@ if __name__ == '__main__':
     scan_interval = args.scan_interval
     minimal_space = args.minimal_space
     move_strategy = args.move_strategy
-    assistant = MoveAssistant(temp_dir_list, hdd_dir_list, sub_dir_name, scan_interval, max_concurrency, minimal_space, move_strategy)
+    suffix = args.suffix
+    assistant = MoveAssistant(temp_dir_list, hdd_dir_list, sub_dir_name, scan_interval, max_concurrency, minimal_space, move_strategy, suffix)
     assistant.start()
