@@ -18,13 +18,13 @@ def size_to_gb(size):
     return round(size / 1024 / 1024 / 1024, 2)
 
 
-def move(source, target, sub_dir_name, current_dirs, current_files):
+def move(source, target, sub_dir_name, current_dirs, current_files, suffix):
     try:
         dist = os.path.join(target, sub_dir_name)
         if not os.path.exists(dist):
             os.makedirs(dist)
         dist_name = os.path.join(dist, source.split(os.path.sep)[-1])
-        dist_temp = dist_name.replace('.plot', '.tmp')
+        dist_temp = dist_name.replace('.%s' % suffix, '.tmp')
         if os.path.exists(dist_temp):
             log("dist temp file exist:%s" % dist_temp)
             os.remove(dist_temp)
@@ -144,7 +144,7 @@ class MoveAssistant:
     def add_move_task(self, plot_name, target):
         self.current_dirs.append(target)
         self.current_files.append(plot_name)
-        self.pool.apply_async(move, (plot_name, target, self.sub_dir_name, self.current_dirs, self.current_files))
+        self.pool.apply_async(move, (plot_name, target, self.sub_dir_name, self.current_dirs, self.current_files, self.suffix))
         log("add move task success:%s" % plot_name)
         return True
 
