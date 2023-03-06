@@ -160,6 +160,8 @@ class DiskUtil:
             uuid = fs["uuid"]
             if disk in mounted_disks:
                 continue
+            if not ftype:
+                continue
             mounted_point = os.path.join(self.folder, "%s%s" % (self.prefix, format_number(seq)))
             if not os.path.exists(mounted_point):
                 os.makedirs(mounted_point)
