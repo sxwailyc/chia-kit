@@ -98,7 +98,7 @@ def get_file_systems():
             if data.startswith("TYPE="):
                 ftype = data.replace("TYPE=", "").replace('"', "")
 
-        if ftype in ('vfat', 'swap', 'None'):
+        if ftype in ('vfat', 'swap', 'LVM2_member'):
             continue
 
         fss.append({
