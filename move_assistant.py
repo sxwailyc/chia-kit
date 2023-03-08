@@ -97,9 +97,6 @@ def parse_hdd_dir(hdd_dir_list):
             hdd_dir = s
         hdd_dirs = parse_express(hdd_dir)
         for hdd_dir in hdd_dirs:
-            if not is_mountpoint(hdd_dir):
-                log("target is not mount point:%s" % hdd_dir)
-                continue
             log("target dir:%s" % hdd_dir)
             hdd_dir_infos.append({
                 'hdd_dir': hdd_dir,
@@ -173,6 +170,9 @@ class MoveAssistant:
         disks = []
         for hdd_dir_info in self.hdd_dir_info_list:
             hdd_dir = hdd_dir_info['hdd_dir']
+            if not is_mountpoint(hdd_dir):
+                log("hdd dir is not mount point:%s" % hdd_dir)
+                continue
             max_file_count = hdd_dir_info['max_file_count']
             if hdd_dir in self.current_dirs:
                 continue
