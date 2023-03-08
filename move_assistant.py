@@ -80,6 +80,11 @@ def is_need_move(time_diff):
     return False
 
 
+def is_mountpoint(path):
+    parent_device = os.stat(os.path.dirname(path)).st_dev
+    own_device = os.stat(path).st_dev
+    return own_device != parent_device
+
 def parse_hdd_dir(hdd_dir_list):
     hdd_dir_infos = []
     for s in hdd_dir_list:
@@ -92,6 +97,10 @@ def parse_hdd_dir(hdd_dir_list):
             hdd_dir = s
         hdd_dirs = parse_express(hdd_dir)
         for hdd_dir in hdd_dirs:
+            if not is_mountpoint(hdd_dir):
+                log("target is not mount point:%s" % hdd_dir)
+                continue
+            log("target dir:%s" % hdd_dir)
             hdd_dir_infos.append({
                 'hdd_dir': hdd_dir,
                 'max_file_count': max_file_count
@@ -105,12 +114,12 @@ def parse_express(dir_name):
         start = dir_name.find("[")
         end = dir_name.find("]")
         prefix = dir_name[:start]
-        suffix = dir_name[end+1:]
-        express = dir_name[start+1:end]
+        suffix = dir_name[end + 1:]
+        express = dir_name[start + 1:end]
         datas = express.split("-")
         seq_start = int(datas[0])
         seq_end = int(datas[1])
-        for i in range(seq_start, seq_end+1):
+        for i in range(seq_start, seq_end + 1):
             ndir_list.append("%s%s%s" % (prefix, format_number(i), suffix))
     else:
         ndir_list.append(dir_name)
@@ -127,7 +136,8 @@ class MoveAssistant:
     ORDER = 1
     AVG = 2
 
-    def __init__(self, temp_dir_list, hdd_dir_list, sub_dir_name='', scan_interval=30, max_concurrency=5, minimal_space=103,
+    def __init__(self, temp_dir_list, hdd_dir_list, sub_dir_name='', scan_interval=30, max_concurrency=5,
+                 minimal_space=103,
                  move_strategy=1, suffix='plot'):
         self.max_concurrency = max_concurrency
         self.temp_dir_list = temp_dir_list
@@ -144,28 +154,29 @@ class MoveAssistant:
     def add_move_task(self, plot_name, target):
         self.current_dirs.append(target)
         self.current_files.append(plot_name)
-        self.pool.apply_async(move, (plot_name, target, self.sub_dir_name, self.current_dirs, self.current_files, self.suffix))
+        self.pool.apply_async(move, (
+        plot_name, target, self.sub_dir_name, self.current_dirs, self.current_files, self.suffix))
         log("add move task success:%s" % plot_name)
         return True
 
-    def is_hdd_dir_enable(self, hdd_dir, max_file_count):
+    def is_hdd_dir_enable(self, hdd_dir, max_file_count, file_size):
         if max_file_count == 0:
             free = get_free(hdd_dir)
-            enable = free >= self.minimal_space
+            enable = free >= file_size
         else:
             files = get_files(os.path.join(hdd_dir, self.sub_dir_name), self.suffix)
             free = (max_file_count - len(files)) * 102
             enable = free > 0
         return enable, free
 
-    def select_one_hdd(self):
+    def select_one_hdd(self, file_size):
         disks = []
         for hdd_dir_info in self.hdd_dir_info_list:
             hdd_dir = hdd_dir_info['hdd_dir']
             max_file_count = hdd_dir_info['max_file_count']
             if hdd_dir in self.current_dirs:
                 continue
-            enable, free = self.is_hdd_dir_enable(hdd_dir, max_file_count)
+            enable, free = self.is_hdd_dir_enable(hdd_dir, max_file_count, file_size)
             if not enable:
                 continue
             disks.append({
@@ -195,7 +206,8 @@ class MoveAssistant:
                 modify_time = os.path.getmtime(file)
                 time_diff = now - modify_time
                 if is_need_move(time_diff):
-                    target = self.select_one_hdd()
+                    file_size = get_file_size(file)
+                    target = self.select_one_hdd(file_size)
                     if not target:
                         return
                     else:
@@ -242,5 +254,6 @@ if __name__ == '__main__':
     minimal_space = args.minimal_space
     move_strategy = args.move_strategy
     suffix = args.suffix
-    assistant = MoveAssistant(temp_dir_list, hdd_dir_list, sub_dir_name, scan_interval, max_concurrency, minimal_space, move_strategy, suffix)
+    assistant = MoveAssistant(temp_dir_list, hdd_dir_list, sub_dir_name, scan_interval, max_concurrency, minimal_space,
+                              move_strategy, suffix)
     assistant.start()
