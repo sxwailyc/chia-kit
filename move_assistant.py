@@ -170,6 +170,8 @@ class MoveAssistant:
         disks = []
         for hdd_dir_info in self.hdd_dir_info_list:
             hdd_dir = hdd_dir_info['hdd_dir']
+            if not os.path.exists(hdd_dir):
+                continue
             if not is_mountpoint(hdd_dir):
                 log("hdd dir is not mount point:%s" % hdd_dir)
                 continue
