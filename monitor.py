@@ -19,7 +19,7 @@ def log(msg):
 
 
 def call_hdsentinel():
-    """cal hdsentinel"""
+    """call hdsentinel"""
     cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "hdsentinel-019c-x64")
     p = Popen(cmd, stdout=PIPE)
     disks = []
@@ -203,12 +203,12 @@ if __name__ == '__main__':
         print("must run by root")
         sys.exit(0)
 
-    """parser = argparse.ArgumentParser(description="""
-    #   This script is for move plot files from ssd to hdd.
+    parser = argparse.ArgumentParser(description="""
+       This script is for move plot files from ssd to hdd.
     """)
-    #parser.add_argument("--host-name", metavar="", help="sub dir name, default is empty", default='')
-    #parser.add_argument("--secret", metavar="", help="scan interval, default is 30 seconds")
-    #args = parser.parse_args()
-    #secret = args.secret
-    #host_name = args.host_name"""
-    main(secret='', host_name='')
+    parser.add_argument("--host-name", metavar="", help="the host name, default is current host name", default='')
+    parser.add_argument("--secret", metavar="", help="secret, use to post to server ")
+    args = parser.parse_args()
+    secret = args.secret
+    host_name = args.host_name
+    main(secret=secret, host_name=host_name)
