@@ -82,6 +82,8 @@ def get_usage_infos():
     if not lines:
         return usage_infos
     for line in lines:
+        if not line:
+            continue
         datas = split_line(line)
         device = datas[0]
         usage = int(datas[2])
