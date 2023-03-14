@@ -154,7 +154,7 @@ def report(secret, machine_info, disk_infos):
         "machine": machine_info,
         "disks": disk_infos
     })
-    requests.post("http://api.mingyan.com/api/chia/monitor", data)
+    requests.post("https://api.mingyan.com/api/chia/monitor", data)
 
 
 def main(secret, host_name):
@@ -204,11 +204,14 @@ if __name__ == '__main__':
         sys.exit(0)
 
     parser = argparse.ArgumentParser(description="""
-       This script is for move plot files from ssd to hdd.
+       This script is for monitor the harvester server and report to the server.
     """)
     parser.add_argument("--host-name", metavar="", help="the host name, default is current host name", default='')
     parser.add_argument("--secret", metavar="", help="secret, use to post to server ")
     args = parser.parse_args()
     secret = args.secret
+    if not secret:
+        print("please input secret with --secret")
+        sys.exit(0)
     host_name = args.host_name
     main(secret=secret, host_name=host_name)
