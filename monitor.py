@@ -79,6 +79,8 @@ def get_usage_infos():
     out = getoutput(cmd)
     lines = out.split("\n")
     usage_infos = {}
+    if not lines:
+        return usage_infos
     for line in lines:
         datas = split_line(line)
         device = datas[0]
