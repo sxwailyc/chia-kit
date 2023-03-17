@@ -21,6 +21,13 @@ def size_to_gb(size):
 def size_to_mb(size):
     return round(size / 1024 / 1024, 2)
 
+def print_success(msg):
+    return "\033[32m%s\033[0m" % msg
+
+
+def print_error(msg):
+    return "\033[31m%s\033[0m" % msg
+
 
 def move(source, target, sub_dir_name, current_dirs, current_files, suffix):
     try:
@@ -43,10 +50,10 @@ def move(source, target, sub_dir_name, current_dirs, current_files, suffix):
         os.renames(dist_temp, dist_name)
         cost_time = time.time() - start
         speed = filesize / cost_time
-        log("finish move[%s][size: %.2fGB, cost time: %.2fs, speed: %.2fMB/s" % (source, size_to_gb(filesize), cost_time, size_to_mb(speed)))
+        log("move %s [file: %s, size: %.2fGB, cost time: %.2fs, speed: %.2fMB/s]" % (print_success('success'), source, size_to_gb(filesize), cost_time, size_to_mb(speed)))
 
     except Exception as e:
-        log('move error:%s' % e)
+        log('move %s:%s' % (print_error('error'), e))
     finally:
         current_dirs.remove(target)
         current_files.remove(source)
