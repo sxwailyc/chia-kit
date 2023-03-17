@@ -43,7 +43,7 @@ def move(source, target, sub_dir_name, current_dirs, current_files, suffix):
         os.renames(dist_temp, dist_name)
         cost_time = time.time() - start
         speed = filesize / cost_time
-        log("finish move[%s][%.2fGB]:cost time:%.2fs, %.2fMB/s" % (source, size_to_gb(filesize), cost_time, size_to_mb(speed)))
+        log("finish move[%s][size: %.2fGB, cost time: %.2fs, speed: %.2fMB/s" % (source, size_to_gb(filesize), cost_time, size_to_mb(speed)))
 
     except Exception as e:
         log('move error:%s' % e)
