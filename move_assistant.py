@@ -18,6 +18,10 @@ def size_to_gb(size):
     return round(size / 1024 / 1024 / 1024, 2)
 
 
+def size_to_mb(size):
+    return round(size / 1024 / 1024, 2)
+
+
 def move(source, target, sub_dir_name, current_dirs, current_files, suffix):
     try:
         dist = os.path.join(target, sub_dir_name)
@@ -28,7 +32,8 @@ def move(source, target, sub_dir_name, current_dirs, current_files, suffix):
         if os.path.exists(dist_temp):
             log("dist temp file exist:%s" % dist_temp)
             os.remove(dist_temp)
-        log("start move %s to %s" % (source, dist))
+        filesize = os.path.getsize(source)
+        log("start move %s[%.2fGB] to %s" % (source, size_to_gb(filesize), dist))
         start = time.time()
         shutil.move(source, dist_temp)
         if os.path.exists(dist_name):
@@ -37,7 +42,8 @@ def move(source, target, sub_dir_name, current_dirs, current_files, suffix):
         log('rename [%s] to [%s]' % (dist_temp, dist_name))
         os.renames(dist_temp, dist_name)
         cost_time = time.time() - start
-        log("finish move[%s]:cost time:%s" % (source, cost_time))
+        speed = filesize / cost_time
+        log("finish move[%s][%.2fGB]:cost time:%.2fs, %.2fMB/s" % (source, size_to_gb(filesize), cost_time, size_to_mb(speed)))
 
     except Exception as e:
         log('move error:%s' % e)
@@ -84,6 +90,7 @@ def is_mountpoint(path):
     parent_device = os.stat(os.path.dirname(path)).st_dev
     own_device = os.stat(path).st_dev
     return own_device != parent_device
+
 
 def parse_hdd_dir(hdd_dir_list):
     hdd_dir_infos = []
@@ -134,14 +141,12 @@ class MoveAssistant:
     AVG = 2
 
     def __init__(self, temp_dir_list, hdd_dir_list, sub_dir_name='', scan_interval=30, max_concurrency=5,
-                 minimal_space=103,
                  move_strategy=1, suffix='plot'):
         self.max_concurrency = max_concurrency
         self.temp_dir_list = temp_dir_list
         self.hdd_dir_info_list = parse_hdd_dir(hdd_dir_list)
         self.sub_dir_name = sub_dir_name
         self.scan_interval = scan_interval
-        self.minimal_space = minimal_space
         self.move_strategy = move_strategy
         self.suffix = suffix
         self.pool = multiprocessing.Pool(max_concurrency)  # processing pool
@@ -152,7 +157,7 @@ class MoveAssistant:
         self.current_dirs.append(target)
         self.current_files.append(plot_name)
         self.pool.apply_async(move, (
-        plot_name, target, self.sub_dir_name, self.current_dirs, self.current_files, self.suffix))
+            plot_name, target, self.sub_dir_name, self.current_dirs, self.current_files, self.suffix))
         log("add move task success:%s" % plot_name)
         return True
 
@@ -239,8 +244,6 @@ if __name__ == '__main__':
     parser.add_argument("--sub-dir-name", metavar="", help="sub dir name, default is empty", default='')
     parser.add_argument("--scan-interval", metavar="", type=int, help="scan interval, default is 30 seconds",
                         default=30)
-    parser.add_argument("--minimal-space", metavar="", type=int, help="minimal space need, default is 103GB",
-                        default=103)
     parser.add_argument("--move-strategy", metavar="", type=int, help="move strategy 1. by order 2. avg, default is 1",
                         default=1)
     parser.add_argument("--suffix", metavar="", help="file suffix default is plot",
@@ -253,9 +256,8 @@ if __name__ == '__main__':
     max_concurrency = args.max_concurrency
     sub_dir_name = args.sub_dir_name
     scan_interval = args.scan_interval
-    minimal_space = args.minimal_space
     move_strategy = args.move_strategy
     suffix = args.suffix
-    assistant = MoveAssistant(temp_dir_list, hdd_dir_list, sub_dir_name, scan_interval, max_concurrency, minimal_space,
+    assistant = MoveAssistant(temp_dir_list, hdd_dir_list, sub_dir_name, scan_interval, max_concurrency,
                               move_strategy, suffix)
     assistant.start()
