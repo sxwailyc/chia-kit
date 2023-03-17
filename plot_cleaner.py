@@ -68,7 +68,7 @@ class PlotCleaner:
     BAD_PLOT = "bad_plot"
     DUPLICATE_PLOT = "duplicate_plot"
 
-    def __init__(self, action, plot_dir_list, recursion=True, suffixs=['plot', 'tmp'], plot_min_size=101,
+    def __init__(self, action, plot_dir_list, recursion=True, suffixs=['tmp'], plot_min_size=70,
                  delete=False):
         self.action = action
         self.plot_dir_list = plot_dir_list
@@ -165,10 +165,10 @@ if __name__ == '__main__':
                         help="whether perform a delete operation when find a bad plot file, default is Flase",
                         default=False)
     parser.add_argument("-s", "--suffixs", metavar="",
-                        help="handle file suffix list, plit by comma. default is plot,tmp", default='plot,tmp')
+                        help="handle file suffix list, plit by comma. default is tmp", default='tmp')
     parser.add_argument("-m", "--plot-min-size", metavar="", type=int,
-                        help="plot file min size, less than this value be considered for bad plot, default is 101Gb",
-                        default=101)
+                        help="plot file min size, less than this value be considered for bad plot, default is 70Gb",
+                        default=70)
 
     args = parser.parse_args()
 
