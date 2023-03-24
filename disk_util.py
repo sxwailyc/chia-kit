@@ -203,7 +203,7 @@ if __name__ == '__main__':
     parser.add_argument("-d", "--dir", help="mount dir, defautl is /mnt/", default="/mnt/")
     parser.add_argument("-p", "--prefix", help="mount sub foler preifx, default is empty", default="")
     parser.add_argument("-e", "--execute", action="store_true",
-                        help="whether perform operation, default is Flase",
+                        help="whether perform operation, default is False",
                         default=False)
 
     args = parser.parse_args()
@@ -216,3 +216,4 @@ if __name__ == '__main__':
     execute = args.execute
     util = DiskUtil(action, folder, prefix, execute)
     util.start()
+

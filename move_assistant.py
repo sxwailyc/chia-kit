@@ -94,6 +94,8 @@ def is_need_move(time_diff):
 
 
 def is_mountpoint(path):
+    if path[-1] == '/':
+        path = path[:-1]
     parent_device = os.stat(os.path.dirname(path)).st_dev
     own_device = os.stat(path).st_dev
     return own_device != parent_device
