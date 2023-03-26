@@ -21,10 +21,10 @@ positional arguments:
 
 optional arguments:
   -h, --help          show this help message and exit
-  --max-concurrency   max concurrency, default is 5 //最大并发数
+  --max-concurrency   max concurrency, default is 10 //最大并发数
   --sub-dir-name      sub dir name, default is empty //子目录，默为空,空则不创建子目录
   --scan-interval     scan interval, default is 30 seconds //扫盘间隔
-  --move-strategy     move strategy 1. by order 2. avg, default is 1 //移动策略 1. 目录顺序移动, 前面的盘会最先塞满 2. 优先移到剩余空间最大的盘,所有盘会平均分配
+  --move-strategy     move strategy 1. by order 2. avg, default is 2 //移动策略 1. 目录顺序移动, 前面的盘会最先塞满 2. 优先移到剩余空间最大的盘,所有盘会平均分配
 ```
 
 #### 2. plot_cleaner.py  清理一些坏的plot文件，临时文件，以及重复的plot文件的脚本

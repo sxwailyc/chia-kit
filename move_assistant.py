@@ -249,12 +249,12 @@ if __name__ == '__main__':
     """)
     parser.add_argument("temp_dir_list", help="chia plot temp dir list, , split by comma")
     parser.add_argument("hdd_dir_list", help="chia hdd dir list, split by comma")
-    parser.add_argument("--max-concurrency", metavar="", type=int, help="max concurrency, default is 5", default=5)
+    parser.add_argument("--max-concurrency", metavar="", type=int, help="max concurrency, default is 10", default=10)
     parser.add_argument("--sub-dir-name", metavar="", help="sub dir name, default is empty", default='')
     parser.add_argument("--scan-interval", metavar="", type=int, help="scan interval, default is 30 seconds",
                         default=30)
-    parser.add_argument("--move-strategy", metavar="", type=int, help="move strategy 1. by order 2. avg, default is 1",
-                        default=1)
+    parser.add_argument("--move-strategy", metavar="", type=int, help="move strategy 1. by order 2. avg, default is 2",
+                        default=2)
     parser.add_argument("--suffix", metavar="", help="file suffix default is plot",
                         default='plot')
 
