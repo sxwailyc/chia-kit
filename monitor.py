@@ -109,6 +109,8 @@ def get_chia_count(base_dir):
             if name.endswith(".plot"):
                 count += 1
         else:
+            if not os.path.exists(name):
+                continue
             files = os.listdir(name)
             for file in files:
                 file = os.path.join(name, file)
