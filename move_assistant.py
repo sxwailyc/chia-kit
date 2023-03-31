@@ -150,7 +150,7 @@ class MoveAssistant:
     AVG = 2
 
     def __init__(self, temp_dir_list, hdd_dir_list, sub_dir_name='', scan_interval=30, max_concurrency=5,
-                 move_strategy=1, suffix='plot'):
+                 move_strategy=1, suffix='plot', skip_mount_point_check=False):
         self.max_concurrency = max_concurrency
         self.temp_dir_list = temp_dir_list
         self.hdd_dir_info_list = parse_hdd_dir(hdd_dir_list)
@@ -158,6 +158,7 @@ class MoveAssistant:
         self.scan_interval = scan_interval
         self.move_strategy = move_strategy
         self.suffix = suffix
+        self.skip_mount_point_check = skip_mount_point_check
         self.pool = multiprocessing.Pool(max_concurrency)  # processing pool
         self.current_dirs = multiprocessing.Manager().list()
         self.current_files = multiprocessing.Manager().list()
@@ -186,7 +187,7 @@ class MoveAssistant:
             hdd_dir = hdd_dir_info['hdd_dir']
             if not os.path.exists(hdd_dir):
                 continue
-            if not is_mountpoint(hdd_dir):
+            if not self.skip_mount_point_check and not is_mountpoint(hdd_dir):
                 log("hdd dir is not mount point:%s" % hdd_dir)
                 continue
             max_file_count = hdd_dir_info['max_file_count']
@@ -257,6 +258,9 @@ if __name__ == '__main__':
                         default=2)
     parser.add_argument("--suffix", metavar="", help="file suffix default is plot",
                         default='plot')
+    parser.add_argument("--skip-mount-point-check", metavar="", action="store_true",
+                        help="whether check the target dir is a mount point, default is Flase",
+                        default=False)
 
     args = parser.parse_args()
 
@@ -267,6 +271,7 @@ if __name__ == '__main__':
     scan_interval = args.scan_interval
     move_strategy = args.move_strategy
     suffix = args.suffix
+    skip_mount_point_check = args.skip_mount_point_check
     assistant = MoveAssistant(temp_dir_list, hdd_dir_list, sub_dir_name, scan_interval, max_concurrency,
-                              move_strategy, suffix)
+                              move_strategy, suffix, skip_mount_point_check)
     assistant.start()
