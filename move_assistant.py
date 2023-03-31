@@ -258,8 +258,8 @@ if __name__ == '__main__':
                         default=2)
     parser.add_argument("--suffix", metavar="", help="file suffix default is plot",
                         default='plot')
-    parser.add_argument("--skip-mount-point-check", metavar="", action="store_true",
-                        help="whether check the target dir is a mount point, default is Flase",
+    parser.add_argument("--skip-mount-point-check", action="store_true",
+                        help="skip check the target dir is a mount point, default is False",
                         default=False)
 
     args = parser.parse_args()
