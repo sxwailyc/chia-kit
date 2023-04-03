@@ -39,7 +39,7 @@ def call_hdsentinel():
                     "device": device,
                     "serial_no": serial_no
                 })
-                model_id =  ""
+                model_id = ""
             device = get_value(line)
         if line.startswith("HDD Model ID"):
             model_id = get_value(line)
@@ -143,11 +143,17 @@ def format_size(s):
 
 
 def format_temperature(s):
-    return int(s.replace("°C", ""))
+    try:
+        return int(s.replace("°C", ""))
+    except:
+        return 0
 
 
 def format_health(s):
-    return int(s.replace("%", ""))
+    try:
+        return int(s.replace("%", ""))
+    except:
+        return 0
 
 
 def is_root():
