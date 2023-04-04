@@ -78,4 +78,5 @@ optional arguments:
   -p PREFIX, --prefix PREFIX        //目录前缀，默认为空，比如可以为 chia, 则挂载目录依次为 /mnt/chia01 /mnt/chia02
                         mount sub foler preifx, default is empty
   -e, --execute         whether perform operation, default is Flase   //是否执行，默认为否，只会输出挂载命令
+  -a, --auto-fix-ntfs   whether perform ntfsfix on ntfs file system, default is False //是否自动对ntfs文件系统执行修复
 ```

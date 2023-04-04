@@ -128,11 +128,12 @@ class DiskUtil:
     ADD_DIR = "add_dir"
     COUNT_PLOT = "count_plot"
 
-    def __init__(self, action, folder, prefix, execute=False):
+    def __init__(self, action, folder, prefix, execute=False, auto_fix_ntfs=False):
         self.action = action
         self.folder = folder
         self.prefix = prefix
         self.execute = execute
+        self.auto_fix_ntfs = auto_fix_ntfs
 
     def start(self):
         if self.action == DiskUtil.MOUNT:
@@ -175,6 +176,8 @@ class DiskUtil:
             seq += 1
             print(mount_cmd)
             if self.execute:
+                if ftype == 'ntfs' and self.auto_fix_ntfs:
+                    os.system("ntfsfix %s" % disk)
                 os.system(mount_cmd)
 
     def add_dir(self):
@@ -205,6 +208,9 @@ if __name__ == '__main__':
     parser.add_argument("-e", "--execute", action="store_true",
                         help="whether perform operation, default is False",
                         default=False)
+    parser.add_argument("-a", "--auto-fix-ntfs", action="store_true",
+                        help="whether perform ntfsfix on ntfs file system, default is False",
+                        default=False)
 
     args = parser.parse_args()
 
@@ -214,6 +220,7 @@ if __name__ == '__main__':
         foler = folder + "/"
     prefix = args.prefix
     execute = args.execute
-    util = DiskUtil(action, folder, prefix, execute)
+    auto_fix_ntfs = args.auto_fix_ntfs
+    util = DiskUtil(action, folder, prefix, execute, auto_fix_ntfs)
     util.start()
 
