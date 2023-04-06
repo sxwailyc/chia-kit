@@ -36,6 +36,7 @@ def remove_one_plot(_dir, suffix="plot"):
         if os.path.isfile(name) and name.endswith(".%s" % suffix):
             log("start to remove: %s" % name)
             os.remove(name)
+            return
 
 
 def main():
