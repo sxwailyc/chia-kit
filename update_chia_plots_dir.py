@@ -66,6 +66,19 @@ class ChiaPlotsDirUpdator:
         out = getoutput(cmd)
         print(out)
         lines = out.split("\n")
+        start = False
+        for line in lines:
+            if line.find('chia plots check') > 0:
+                start = True
+                continue
+            if not start:
+                continue
+            if line:
+                continue
+            cmd = '%s plots remote -d %s' % (self.bin, line)
+            print(cmd)
+            if self.remove and self.execute:
+                os.system(cmd)
 
     def add_dir(self):
         chia_dirs = batch_get_chia_dirs(self.folers)
