@@ -139,6 +139,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     bin = args.bin
+
+    path = os.which(bin)
+
+    if path is None:
+        print(f"{bin} Command not found, please specify the path to Chia.")
+
     folders = args.dir
     if folders:
         folders = [x[0] for x in folders]
