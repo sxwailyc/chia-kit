@@ -12,6 +12,12 @@ def log(msg):
     s = "[%s]%s" % (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), msg)
     print(s)
 
+def batch_get_chia_dirs(base_dirs):
+    chia_dirs = []
+    for base_dir in base_dirs:
+        chia_dirs.extend(get_chia_dirs(base_dir))
+    return chia_dirs
+
 
 def get_chia_dirs(base_dir):
     chia_dirs = []
@@ -62,7 +68,7 @@ class ChiaPlotsDirUpdator:
         lines = out.split("\n")
 
     def add_dir(self):
-        chia_dirs = get_chia_dirs(self.folder)
+        chia_dirs = batch_get_chia_dirs(self.folers)
         for chia_dir in chia_dirs:
             if self.grep:
                 if chia_dir.find(self.grep) == -1:
