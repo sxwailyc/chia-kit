@@ -112,10 +112,10 @@ class ChiaPlotsDirUpdator:
         log("add %s dirs, remove %s dirs" % (new, remove))
         log("add dirs:")
         for remove_dir in remove_dirs:
-            log("%s-%s", ("\t" * 4, remove_dir))
+            log("%s-%s" % ("\t" * 4, remove_dir))
         log("remove dirs:")
         for chia_filter_dir in chia_filter_dirs:
-            log("%s+%s", ("\t" * 4, chia_filter_dir))
+            log("%s+%s" % ("\t" * 4, chia_filter_dir))
 
 
 if __name__ == '__main__':
