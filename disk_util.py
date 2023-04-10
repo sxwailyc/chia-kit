@@ -203,7 +203,7 @@ if __name__ == '__main__':
     parser.add_argument("action",
                         help="mount: mount disk; mkfs: make file system; add_dir: add chia dir, count_plot: count plot files ",
                         choices=['mount', 'mkfs', 'add_dir', 'count_plot'])
-    parser.add_argument("-d", "--dir", help="mount dir, defautl is /mnt/", default="/mnt/")
+    parser.add_argument("-d", "--dir", help="mount dir, defautl is /mnt/", default=["/mnt/"])
     parser.add_argument("-p", "--prefix", help="mount sub foler preifx, default is empty", default="")
     parser.add_argument("-e", "--execute", action="store_true",
                         help="whether perform operation, default is False",
