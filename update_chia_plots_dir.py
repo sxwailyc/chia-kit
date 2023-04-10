@@ -88,7 +88,7 @@ if __name__ == '__main__':
            This script is auto update chia plots directory.
         """)
     parser.add_argument("-b", "--bin", help="chia bin path, default is chia", default="chia")
-    parser.add_argument("-d", "--dir", nargs='+', action='append', help="mount dir, defautl is /mnt/", default="/mnt/")
+    parser.add_argument("-d", "--dir", nargs='+', action='append', help="mount dir, defautl is [/mnt/]")
     parser.add_argument("-g️", "--grep", help="equal grep ", default="")
     parser.add_argument("-v", "--grepv", help="equal grep -v ", default="")
     parser.add_argument("-e", "--execute", action="store_true", help="whether perform operation, default is False", default=False)
@@ -98,6 +98,12 @@ if __name__ == '__main__':
 
     bin = args.bin
     folders = args.dir
+    if folders:
+        folders = [x[0] for x in folders]
+    else:
+        if not folders:
+            folders = ['/mnt/']
+    print(folders)
     grep = args.grep
     grepv = args.grepv
     execute = args.execute
