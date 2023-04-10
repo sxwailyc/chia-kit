@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import shutil
+
 from subprocess import getoutput
 
 import argparse
@@ -140,7 +142,7 @@ if __name__ == '__main__':
 
     bin = args.bin
 
-    path = os.which(bin)
+    path = os.shutil(bin)
 
     if path is None:
         print(f"{bin} Command not found, please specify the path to Chia.")
