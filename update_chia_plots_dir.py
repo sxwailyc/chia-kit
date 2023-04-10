@@ -142,7 +142,7 @@ if __name__ == '__main__':
 
     bin = args.bin
 
-    path = os.shutil(bin)
+    path = shutil.which(bin)
 
     if path is None:
         print(f"{bin} Command not found, please specify the path to Chia.")
