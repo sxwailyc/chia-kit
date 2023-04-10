@@ -65,10 +65,10 @@ class ChiaPlotsDirUpdator:
     def remove_dir(self):
         cmd = "%s plots show" % self.bin
         out = getoutput(cmd)
-        print(out)
         lines = out.split("\n")
         start = False
         for line in lines:
+            print(line, line.find('chia plots check'))
             if line.find('chia plots check') > 0:
                 start = True
                 continue
