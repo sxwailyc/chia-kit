@@ -102,20 +102,25 @@ class ChiaPlotsDirUpdator:
                 remove_dirs.append(present_dir)
                 remove += 1
 
+        add_dirs = []
         for chia_filter_dir in chia_filter_dirs:
-            cmd = "%s plots add -d %s" % (self.bin, chia_filter_dir)
-            print(cmd)
-            if self.execute:
-                os.system(cmd)
-            new += 1
+            if self.clean or chia_filter_dir not in present_dirs:
+                cmd = "%s plots add -d %s" % (self.bin, chia_filter_dir)
+                print(cmd)
+                if self.execute:
+                    os.system(cmd)
 
-        log("add %s dirs, remove %s dirs" % (new, remove))
+            if chia_filter_dir not in present_dirs:
+                add_dirs.append(chia_filter_dir)
+                new += 1
+
+        log("add %s new dirs, remove %s present dirs" % (new, remove))
         log("add dirs:")
+        for add_dir in add_dirs:
+            log("%s+%s" % ("\t", add_dir))
+        log("remove dirs:")
         for remove_dir in remove_dirs:
             log("%s-%s" % ("\t", remove_dir))
-        log("remove dirs:")
-        for chia_filter_dir in chia_filter_dirs:
-            log("%s+%s" % ("\t", chia_filter_dir))
 
 
 if __name__ == '__main__':
