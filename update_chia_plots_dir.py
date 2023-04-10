@@ -68,15 +68,14 @@ class ChiaPlotsDirUpdator:
         lines = out.split("\n")
         start = False
         for line in lines:
-            print(line, line.find('chia plots check'))
             if line.find('chia plots check') > 0:
                 start = True
                 continue
             if not start:
                 continue
-            if line:
+            if not line:
                 continue
-            cmd = '%s plots remote -d %s' % (self.bin, line)
+            cmd = '%s plots remove -d %s' % (self.bin, line)
             print(cmd)
             if self.remove and self.execute:
                 os.system(cmd)
