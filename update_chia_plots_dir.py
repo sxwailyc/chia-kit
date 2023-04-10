@@ -49,24 +49,23 @@ def get_chia_dirs(base_dir):
 
 class ChiaPlotsDirUpdator:
 
-    def __init__(self, bin, folers, grep, grepv, execute, remove):
+    def __init__(self, bin, folers, grep, grepv, execute, clean):
         self.bin = bin
         self.folers = folers
         self.grep = grep
         self.grepv = grepv
         self.execute = execute
-        self.remove = remove
+        self.clean = clean
 
     def main(self):
-        if self.remove:
-            self.remove_dir()
         self.add_dir()
 
-    def remove_dir(self):
+    def get_present_dirs(self):
         cmd = "%s plots show" % self.bin
         out = getoutput(cmd)
         lines = out.split("\n")
         start = False
+        present_dirs = []
         for line in lines:
             if line.find('chia plots check') > 0:
                 start = True
@@ -75,13 +74,15 @@ class ChiaPlotsDirUpdator:
                 continue
             if not line:
                 continue
-            cmd = '%s plots remove -d %s' % (self.bin, line)
-            print(cmd)
-            if self.remove and self.execute:
-                os.system(cmd)
+            present_dirs.append(line)
+
+        return present_dirs
 
     def add_dir(self):
+        present_dirs = self.get_present_dirs()
         chia_dirs = batch_get_chia_dirs(self.folers)
+        chia_filter_dirs = []
+        remove_dirs = []
         for chia_dir in chia_dirs:
             if self.grep:
                 if chia_dir.find(self.grep) == -1:
@@ -89,11 +90,32 @@ class ChiaPlotsDirUpdator:
             if self.grepv:
                 if chia_dir.find(self.grepv) != -1:
                     continue
+            chia_filter_dirs.append(chia_dir)
 
-            cmd = "%s plots add -d %s" % (self.bin, chia_dir)
+        new, remove = 0, 0
+        for present_dir in present_dirs:
+            if present_dir not in chia_filter_dirs:
+                cmd = '%s plots remove -d %s' % (self.bin, present_dir)
+                print(cmd)
+                if self.execute:
+                    os.system(cmd)
+                remove_dirs.append(present_dir)
+                remove += 1
+
+        for chia_filter_dir in chia_filter_dirs:
+            cmd = "%s plots add -d %s" % (self.bin, chia_filter_dir)
             print(cmd)
             if self.execute:
                 os.system(cmd)
+            new += 1
+
+        log("add %s dirs, remove %s dirs" % (new, remove))
+        log("add dirs:")
+        for remove_dir in remove_dirs:
+            log("%s-%s", ("\t" * 4, remove_dir))
+        log("remove dirs:")
+        for chia_filter_dir in chia_filter_dirs:
+            log("%s+%s", ("\t" * 4, chia_filter_dir))
 
 
 if __name__ == '__main__':
@@ -106,8 +128,8 @@ if __name__ == '__main__':
     parser.add_argument("-v", "--grepv", help="equal grep -v ", default="")
     parser.add_argument("-e", "--execute", action="store_true", help="whether perform operation, default is False",
                         default=False)
-    parser.add_argument("-r", "--remove", action="store_true",
-                        help="whether remove all the dir in chia config first, default is False", default=False)
+    parser.add_argument("-c", "--clean", action="store_true",
+                        help="whether clean all the dir in chia config", default=False)
 
     args = parser.parse_args()
 
@@ -121,6 +143,6 @@ if __name__ == '__main__':
     grep = args.grep
     grepv = args.grepv
     execute = args.execute
-    remove = args.remove
-    updator = ChiaPlotsDirUpdator(bin, folders, grep, grepv, execute, remove)
+    clean = args.clean
+    updator = ChiaPlotsDirUpdator(bin, folders, grep, grepv, execute, clean)
     updator.main()
