@@ -118,7 +118,6 @@ if __name__ == '__main__':
     else:
         if not folders:
             folders = ['/mnt/']
-    print(folders)
     grep = args.grep
     grepv = args.grepv
     execute = args.execute
