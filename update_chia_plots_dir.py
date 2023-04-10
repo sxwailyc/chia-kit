@@ -12,11 +12,12 @@ def log(msg):
     s = "[%s]%s" % (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), msg)
     print(s)
 
+
 def batch_get_chia_dirs(base_dirs):
     chia_dirs = []
     for base_dir in base_dirs:
         chia_dirs.extend(get_chia_dirs(base_dir))
-    return chia_dirs
+    return sorted(chia_dirs)
 
 
 def get_chia_dirs(base_dir):
@@ -104,8 +105,10 @@ if __name__ == '__main__':
     parser.add_argument("-d", "--dir", nargs='+', action='append', help="mount dir, defautl is [/mnt/]")
     parser.add_argument("-g️", "--grep", help="equal grep ", default="")
     parser.add_argument("-v", "--grepv", help="equal grep -v ", default="")
-    parser.add_argument("-e", "--execute", action="store_true", help="whether perform operation, default is False", default=False)
-    parser.add_argument("-r", "--remove", action="store_true", help="whether remove all the dir in chia config first, default is False", default=False)
+    parser.add_argument("-e", "--execute", action="store_true", help="whether perform operation, default is False",
+                        default=False)
+    parser.add_argument("-r", "--remove", action="store_true",
+                        help="whether remove all the dir in chia config first, default is False", default=False)
 
     args = parser.parse_args()
 
@@ -123,4 +126,3 @@ if __name__ == '__main__':
     remove = args.remove
     updator = ChiaPlotsDirUpdator(bin, folders, grep, grepv, execute, remove)
     updator.main()
-
