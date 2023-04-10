@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import shutil
+import sys
 
 from subprocess import getoutput
 
@@ -146,6 +147,7 @@ if __name__ == '__main__':
 
     if path is None:
         print(f"{bin} Command not found, please specify the path to Chia.")
+        sys.exit(0)
 
     folders = args.dir
     if folders:
