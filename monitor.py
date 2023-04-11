@@ -72,6 +72,8 @@ def get_usage_infos():
         datas = split_line(line)
         device = datas[0]
         filesystem = datas[1]
+        if filesystem == 'fuseblk':
+            filesystem = 'ntfs'
         usage = to_int(datas[3])
         mount_point = datas[6]
         if mount_point == '/' or mount_point.startswith("/boot/"):
