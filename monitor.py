@@ -18,48 +18,33 @@ def log(msg):
     print(s)
 
 
+def to_int(s):
+    try:
+        return int(s)
+    except:
+        return 0
+
+
 def call_hdsentinel():
     """call hdsentinel"""
-    cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "hdsentinel-019c-x64")
+    cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "hdsentinel-019c-x64 -solid")
     p = Popen(cmd, stdout=PIPE)
     disks = []
-    model_id, size, temperature, health, device = "", 0, 0, 0, ""
+    # device, temperature, health, power_time, model_id, serial_no, size
     while True:
         line = p.stdout.readline()
         if not line:
             break
         line = line.decode('utf-8')
-        if line.startswith("HDD Device"):
-            if device:
-                disks.append({
-                    "model_id": model_id,
-                    "size": size,
-                    "temperature": temperature,
-                    "health": health,
-                    "device": device,
-                    "serial_no": serial_no
-                })
-                model_id = ""
-            device = get_value(line)
-        if line.startswith("HDD Model ID"):
-            model_id = get_value(line)
-        if line.startswith("HDD Serial No"):
-            serial_no = get_value(line)
-        if line.startswith("HDD Size"):
-            size = format_size(get_value(line))
-        if line.startswith("Temperature"):
-            temperature = format_temperature(get_value(line))
-        if line.startswith("Health"):
-            health = format_health(get_value(line))
-
-    if model_id:
+        datas = split_line(line)
         disks.append({
-            "model_id": model_id,
-            "size": size,
-            "temperature": temperature,
-            "health": health,
-            "device": device,
-            "serial_no": serial_no
+            "model_id": datas[4],
+            "size": to_int(datas[6]),
+            "temperature": to_int(datas[1]),
+            "health": to_int(datas[2]),
+            "device": datas[0],
+            "serial_no": datas[5],
+            "power_time": to_int(datas[3])
         })
 
     return disks
@@ -75,7 +60,7 @@ def split_line(line):
 
 
 def get_usage_infos():
-    cmd = "df -lm | grep /dev/sd"
+    cmd = "df -lmT | grep /dev/sd"
     out = getoutput(cmd)
     lines = out.split("\n")
     usage_infos = {}
@@ -86,13 +71,15 @@ def get_usage_infos():
             continue
         datas = split_line(line)
         device = datas[0]
-        usage = int(datas[2])
-        mount_point = datas[5]
+        filesystem = datas[1]
+        usage = to_int(datas[3])
+        mount_point = datas[6]
         if mount_point == '/' or mount_point.startswith("/boot/"):
             continue
         usage_infos[format_device(device)] = {
             'usage': usage,
-            'mount_point': mount_point
+            'mount_point': mount_point,
+            'filesystem': filesystem
         }
 
     return usage_infos
@@ -160,6 +147,16 @@ def is_root():
     return os.getuid() == 0
 
 
+def is_harvester_alive():
+    cmd = "ps -eo pid,args | grep chia_harvester | grep -v grep"
+    out = getoutput(cmd)
+    lines = out.split("\n")
+    for line in lines:
+        if line.find("chia_harvester") != -1:
+            return 1
+    return 0
+
+
 def report(secret, machine_info, disk_infos):
     data = json.dumps({
         "secret": secret,
@@ -189,6 +186,7 @@ def main(secret, host_name):
             continue
         usage = usage_info.get('usage', 0)
         mount_point = usage_info.get('mount_point', "")
+        filesystem = usage_info.get('filesystem', "")
         plot_count = get_chia_count(mount_point)
         disk_count += 1
         all_plot_count += plot_count
@@ -197,6 +195,7 @@ def main(secret, host_name):
         disk_info["usage"] = usage
         disk_info["plot_count"] = plot_count
         disk_info["mount_point"] = mount_point
+        disk_info["filesystem"] = filesystem
         ndisk_infos.append(disk_info)
 
     machine_info = {
@@ -205,6 +204,7 @@ def main(secret, host_name):
         'disk_count': disk_count,
         'all_usage': all_usage,
         'all_size': all_size,
+        'harvester': is_harvester_alive()
     }
 
     report(secret, machine_info, ndisk_infos)
