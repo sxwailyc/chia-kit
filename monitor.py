@@ -27,8 +27,8 @@ def to_int(s):
 
 def call_hdsentinel():
     """call hdsentinel"""
-    cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "hdsentinel-019c-x64 -solid")
-    p = Popen(cmd, stdout=PIPE)
+    cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "hdsentinel-019c-x64")
+    p = Popen([cmd, "-solid"], stdout=PIPE)
     disks = []
     # device, temperature, health, power_time, model_id, serial_no, size
     while True:
