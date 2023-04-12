@@ -121,6 +121,13 @@ def get_mount_type(ftype):
     elif ftype in ('xfs', 'f2fs', 'ext4'):
         return ftype
 
+def is_mountpoint(path):
+    if path[-1] == '/':
+        path = path[:-1]
+    parent_device = os.stat(os.path.dirname(path)).st_dev
+    own_device = os.stat(path).st_dev
+    return own_device != parent_device
+
 
 class DiskUtil:
     MOUNT = "mount"
@@ -171,8 +178,15 @@ class DiskUtil:
             if ftype == 'ntfs':
                 param = '-o big_writes'
 
-            mount_cmd = "mount -t %s %s /dev/disk/by-uuid/%s %s%s%s" % (
-                get_mount_type(ftype), param, uuid, self.folder, self.prefix, format_number(seq))
+            mount_point = ""
+            while True:
+                mount_point = "%s%s%s" % (self.folder, self.prefix, format_number(seq))
+                if not is_mountpoint(mount_point):
+                    break
+                seq += 1
+
+            mount_cmd = "mount -t %s %s /dev/disk/by-uuid/%s %s" % (
+                get_mount_type(ftype), param, uuid, mount_point)
             seq += 1
             print(mount_cmd)
             if self.execute:
