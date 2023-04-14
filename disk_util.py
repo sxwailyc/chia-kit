@@ -178,11 +178,12 @@ class DiskUtil:
             mount_point = None
             while True:
                 mount_point = os.path.join(self.folder, "%s%s" % (self.prefix, format_number(seq)))
-                if not os.path.exists(mount_point):
-                    os.makedirs(mount_point)
-                if not not is_mountpoint(mount_point):
+                if not os.path.exists(mount_point) or not is_mountpoint(mount_point):
                     break
                 seq += 1
+
+            if not os.path.exists(mount_point):
+                os.makedirs(mount_point)
 
             mount_cmd = "mount -t %s %s /dev/disk/by-uuid/%s %s" % (
                 get_mount_type(ftype), param, uuid, mount_point)
