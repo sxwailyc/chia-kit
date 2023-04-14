@@ -170,18 +170,17 @@ class DiskUtil:
                 continue
             if not ftype:
                 continue
-            mounted_point = os.path.join(self.folder, "%s%s" % (self.prefix, format_number(seq)))
-            if not os.path.exists(mounted_point):
-                os.makedirs(mounted_point)
 
             param = ""
             if ftype == 'ntfs':
                 param = '-o big_writes'
 
-            mount_point = ""
+            mount_point = None
             while True:
-                mount_point = "%s%s%s" % (self.folder, self.prefix, format_number(seq))
-                if not is_mountpoint(mount_point):
+                mount_point = os.path.join(self.folder, "%s%s" % (self.prefix, format_number(seq)))
+                if not os.path.exists(mount_point):
+                    os.makedirs(mount_point)
+                if not not is_mountpoint(mount_point):
                     break
                 seq += 1
 
