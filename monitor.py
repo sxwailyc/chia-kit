@@ -4,6 +4,8 @@
 import sys
 import socket
 import json
+import time
+
 import requests
 
 from subprocess import Popen, PIPE, getoutput
@@ -165,7 +167,14 @@ def report(secret, machine_info, disk_infos):
         "machine": machine_info,
         "disks": disk_infos
     })
-    requests.post("https://api.mingyan.com/api/chia/monitor", data)
+    try_times = 0
+    while try_times < 3:
+        try:
+            requests.post("https://api.mingyan.com/api/chia/monitor", data)
+            break
+        except:
+            time.sleep(10)
+        try_times += 1
 
 
 def main(secret, host_name):
