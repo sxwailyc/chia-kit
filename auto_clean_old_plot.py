@@ -29,26 +29,42 @@ def get_free(disk):
 def remove_one_plot(_dir, suffix="plot"):
     """get all the plot files"""
     if not _dir or not os.path.isdir(_dir):
-        return
+        return False
     names = os.listdir(_dir)
     for name in names:
         name = os.path.join(_dir, name)
         if os.path.isfile(name) and name.endswith(".%s" % suffix):
             log("start to remove: %s" % name)
             os.remove(name)
-            return
+            return True
+    return False
 
 
-def main():
-    for i in range(1, 25):
+def main(count=100, max_count=5):
+    empty_count = 0
+    for i in range(1, count):
         disk = "/mnt/chia%s/" % format_number(i)
         if not os.path.exists(disk):
             continue
-        dir = "%schia_plot_k32_new" % disk
+        free = get_free(disk)
+        if free > 73:
+            empty_count += 1
+
+    if empty_count >= max_count:
+        return
+
+    for i in range(1, count):
+        disk = "/mnt/chia%s/" % format_number(i)
+        if not os.path.exists(disk):
+            continue
+        dir_name = "%schia_plot_k32_new" % disk
         free = get_free(disk)
         log("disk: %s, free size: %sGB" % (disk, free))
         if free <= 73:
-            remove_one_plot(dir)
+            if remove_one_plot(dir_name):
+                empty_count += 1
+        if empty_count >= max_count:
+            break
 
 
 if __name__ == '__main__':
