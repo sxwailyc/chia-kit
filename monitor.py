@@ -52,6 +52,15 @@ def call_hdsentinel():
     return disks
 
 
+def get_local_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
+    except:
+        return "127.0.0.1"
+
+
 def split_line(line):
     datas = line.split(" ")
     ndatas = []
@@ -211,6 +220,7 @@ def main(secret, host_name):
 
     machine_info = {
         'host_name': host_name,
+        'ip': get_local_ip(),
         'plot_count': all_plot_count,
         'disk_count': disk_count,
         'all_usage': all_usage,
