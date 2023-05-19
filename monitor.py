@@ -39,6 +39,8 @@ def call_hdsentinel():
             break
         line = line.decode('utf-8')
         datas = split_line(line)
+        if len(datas) < 7:
+            continue
         disks.append({
             "model_id": datas[4],
             "size": to_int(datas[6]),
