@@ -118,7 +118,7 @@ def format_number(i):
 def get_mount_type(ftype):
     if ftype == 'ntfs':
         return 'ntfs-3g'
-    elif ftype in ('xfs', 'f2fs', 'ext4'):
+    elif ftype in ('xfs', 'f2fs', 'ext4', 'btrfs'):
         return ftype
 
 def is_mountpoint(path):
