@@ -172,6 +172,20 @@ def is_harvester_alive():
     return 0
 
 
+def monitor_is_running():
+    cmd = "ps -eo pid,args | grep monitor.py | grep -v grep"
+    out = getoutput(cmd)
+    lines = out.split("\n")
+    count = 0
+    for line in lines:
+        if line.find("monitor.py") != -1:
+            count += 1
+    if count > 1:
+        return True
+    else:
+        return False
+
+
 def report(secret, machine_info, disk_infos):
     data = json.dumps({
         "secret": secret,
@@ -236,6 +250,10 @@ def main(secret, host_name):
 if __name__ == '__main__':
     if not is_root():
         print("must run by root")
+        sys.exit(0)
+
+    if monitor_is_running():
+        print("monitor is running")
         sys.exit(0)
 
     parser = argparse.ArgumentParser(description="""
