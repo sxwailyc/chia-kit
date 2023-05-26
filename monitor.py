@@ -27,7 +27,7 @@ def to_int(s):
         return 0
 
 
-def call_hdsentinel(devname):
+def call_hdsentinel(devname, print_info):
     """call hdsentinel"""
     cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "hdsentinel-019c-x64")
     p = Popen([cmd, "-dev", devname, "-solid"], stdout=PIPE)
@@ -41,6 +41,10 @@ def call_hdsentinel(devname):
         datas = split_line(line)
         if len(datas) < 7:
             continue
+
+        if print_info:
+            print(line)
+
         return {
             "model_id": datas[4],
             "size": to_int(datas[6]),
@@ -199,7 +203,7 @@ def report(secret, machine_info, disk_infos):
         try_times += 1
 
 
-def main(secret, host_name):
+def main(secret, host_name, print_info):
     if not host_name:
         host_name = socket.gethostname()
         print(host_name)
@@ -211,7 +215,7 @@ def main(secret, host_name):
     all_plot_count = 0
     ndisk_infos = []
     for devname, usage_info in usage_infos.items():
-        disk_info = call_hdsentinel(devname)
+        disk_info = call_hdsentinel(devname, print_info)
         if not disk_info:
             continue
         size = disk_info['size']
@@ -256,10 +260,14 @@ if __name__ == '__main__':
     """)
     parser.add_argument("--host-name", metavar="", help="the host name, default is current host name", default='')
     parser.add_argument("--secret", metavar="", help="secret, use to post to server ")
+    parser.add_argument("-p", "--print", action="store_true",
+                        help="whether print the info, default is False",
+                        default=False)
     args = parser.parse_args()
     secret = args.secret
     if not secret:
         print("please input secret with --secret")
         sys.exit(0)
     host_name = args.host_name
-    main(secret=secret, host_name=host_name)
+    print_info = args.print
+    main(secret=secret, host_name=host_name, print_info=print_info)
