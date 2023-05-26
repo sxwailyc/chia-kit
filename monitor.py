@@ -213,22 +213,18 @@ def main(secret, host_name, print_info):
 
 
 def acquire_port_lock(port):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind(('localhost', port))
-    sock.listen(1)
-
-    # 尝试获取端口锁
     try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind(('localhost', port))
+        sock.listen(1)
         fcntl.flock(sock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return sock
     except IOError:
         print(f"Another process is already listening on port {port}. Exiting.")
         exit(1)
 
-    return sock
-
 
 def release_port_lock(sock):
-    # 释放端口锁
     fcntl.flock(sock.fileno(), fcntl.LOCK_UN)
     sock.close()
 
