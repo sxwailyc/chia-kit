@@ -38,6 +38,7 @@ def call_hdsentinel(devname, print_info):
         if not line:
             break
         line = line.decode('utf-8')
+        line = line.replace("\n", "")
         datas = split_line(line)
         if len(datas) < 7:
             continue
