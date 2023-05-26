@@ -56,6 +56,7 @@ def call_hdsentinel(devname, print_info):
             "power_time": to_int(datas[3])
         }
 
+
 def get_local_ip():
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -135,29 +136,6 @@ def format_device(device):
     if device[-1].isdigit():
         device = device[:-1]
     return device
-
-
-def get_value(line):
-    datas = line.split(":")
-    return datas[1].strip()
-
-
-def format_size(s):
-    return int(s.replace("MB", ""))
-
-
-def format_temperature(s):
-    try:
-        return int(s.replace("°C", ""))
-    except:
-        return 0
-
-
-def format_health(s):
-    try:
-        return int(s.replace("%", ""))
-    except:
-        return 0
 
 
 def is_root():
