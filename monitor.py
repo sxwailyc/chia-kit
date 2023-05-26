@@ -254,9 +254,11 @@ if __name__ == '__main__':
     host_name = args.host_name
     print_info = args.print
 
+    sock = None
     try:
         sock = acquire_port_lock(port)
         print('lock success')
         main(secret=secret, host_name=host_name, print_info=print_info)
     finally:
-        release_port_lock(sock)
+        if sock:
+            release_port_lock(sock)
