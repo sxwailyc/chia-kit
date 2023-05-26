@@ -27,10 +27,10 @@ def to_int(s):
         return 0
 
 
-def call_hdsentinel():
+def call_hdsentinel(devname):
     """call hdsentinel"""
     cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "hdsentinel-019c-x64")
-    p = Popen([cmd, "-solid"], stdout=PIPE)
+    p = Popen([cmd, "-dev", devname, "-solid"], stdout=PIPE)
     disks = []
     # device, temperature, health, power_time, model_id, serial_no, size
     while True:
@@ -41,7 +41,7 @@ def call_hdsentinel():
         datas = split_line(line)
         if len(datas) < 7:
             continue
-        disks.append({
+        return {
             "model_id": datas[4],
             "size": to_int(datas[6]),
             "temperature": to_int(datas[1]),
@@ -49,10 +49,7 @@ def call_hdsentinel():
             "device": datas[0],
             "serial_no": datas[5],
             "power_time": to_int(datas[3])
-        })
-
-    return disks
-
+        }
 
 def get_local_ip():
     try:
@@ -207,19 +204,17 @@ def main(secret, host_name):
         host_name = socket.gethostname()
         print(host_name)
 
-    disk_infos = call_hdsentinel()
     usage_infos = get_usage_infos()
     disk_count = 0
     all_size = 0
     all_usage = 0
     all_plot_count = 0
     ndisk_infos = []
-    for disk_info in disk_infos:
-        device = disk_info['device']
-        size = disk_info['size']
-        usage_info = usage_infos.get(device, {})
-        if not usage_info:
+    for devname, usage_info in usage_infos.items():
+        disk_info = call_hdsentinel(devname)
+        if not disk_info:
             continue
+        size = disk_info['size']
         usage = usage_info.get('usage', 0)
         mount_point = usage_info.get('mount_point', "")
         filesystem = usage_info.get('filesystem', "")
