@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import fcntl
 import sys
 import socket
 import json
@@ -152,20 +153,6 @@ def is_harvester_alive():
     return 0
 
 
-def monitor_is_running():
-    cmd = "ps -eo pid,args | grep monitor.py | grep -v grep"
-    out = getoutput(cmd)
-    lines = out.split("\n")
-    count = 0
-    for line in lines:
-        if line.find("monitor.py") != -1:
-            count += 1
-    if count > 1:
-        return True
-    else:
-        return False
-
-
 def report(secret, machine_info, disk_infos):
     data = json.dumps({
         "secret": secret,
@@ -225,13 +212,30 @@ def main(secret, host_name, print_info):
     report(secret, machine_info, ndisk_infos)
 
 
+def acquire_port_lock(port):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.bind(('localhost', port))
+    sock.listen(1)
+
+    # 尝试获取端口锁
+    try:
+        fcntl.flock(sock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except IOError:
+        print(f"Another process is already listening on port {port}. Exiting.")
+        exit(1)
+
+    return sock
+
+
+def release_port_lock(sock):
+    # 释放端口锁
+    fcntl.flock(sock.fileno(), fcntl.LOCK_UN)
+    sock.close()
+
+
 if __name__ == '__main__':
     if not is_root():
         print("must run by root")
-        sys.exit(0)
-
-    if monitor_is_running():
-        print("monitor is running")
         sys.exit(0)
 
     parser = argparse.ArgumentParser(description="""
@@ -242,11 +246,20 @@ if __name__ == '__main__':
     parser.add_argument("-p", "--print", action="store_true",
                         help="whether print the info, default is False",
                         default=False)
+    parser.add_argument("--lock-port", metavar="", type=int, help="lock port, default is 8000",
+                        default=8000)
+
     args = parser.parse_args()
     secret = args.secret
+    port = args.lock_port
     if not secret:
         print("please input secret with --secret")
         sys.exit(0)
     host_name = args.host_name
     print_info = args.print
-    main(secret=secret, host_name=host_name, print_info=print_info)
+
+    try:
+        acquire_port_lock(port)
+        main(secret=secret, host_name=host_name, print_info=print_info)
+    finally:
+        release_port_lock(port)
