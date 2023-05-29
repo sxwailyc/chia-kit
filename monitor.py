@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import fcntl
 import sys
 import socket
 import json
@@ -27,10 +28,10 @@ def to_int(s):
         return 0
 
 
-def call_hdsentinel():
+def call_hdsentinel(devname, print_info):
     """call hdsentinel"""
     cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "hdsentinel-019c-x64")
-    p = Popen([cmd, "-solid"], stdout=PIPE)
+    p = Popen([cmd, "-dev", devname, "-solid"], stdout=PIPE)
     disks = []
     # device, temperature, health, power_time, model_id, serial_no, size
     while True:
@@ -38,10 +39,15 @@ def call_hdsentinel():
         if not line:
             break
         line = line.decode('utf-8')
+        line = line.replace("\n", "")
         datas = split_line(line)
         if len(datas) < 7:
             continue
-        disks.append({
+
+        if print_info:
+            print(line)
+
+        return {
             "model_id": datas[4],
             "size": to_int(datas[6]),
             "temperature": to_int(datas[1]),
@@ -49,9 +55,7 @@ def call_hdsentinel():
             "device": datas[0],
             "serial_no": datas[5],
             "power_time": to_int(datas[3])
-        })
-
-    return disks
+        }
 
 
 def get_local_ip():
@@ -135,29 +139,6 @@ def format_device(device):
     return device
 
 
-def get_value(line):
-    datas = line.split(":")
-    return datas[1].strip()
-
-
-def format_size(s):
-    return int(s.replace("MB", ""))
-
-
-def format_temperature(s):
-    try:
-        return int(s.replace("°C", ""))
-    except:
-        return 0
-
-
-def format_health(s):
-    try:
-        return int(s.replace("%", ""))
-    except:
-        return 0
-
-
 def is_root():
     return os.getuid() == 0
 
@@ -188,24 +169,22 @@ def report(secret, machine_info, disk_infos):
         try_times += 1
 
 
-def main(secret, host_name):
+def main(secret, host_name, print_info):
     if not host_name:
         host_name = socket.gethostname()
         print(host_name)
 
-    disk_infos = call_hdsentinel()
     usage_infos = get_usage_infos()
     disk_count = 0
     all_size = 0
     all_usage = 0
     all_plot_count = 0
     ndisk_infos = []
-    for disk_info in disk_infos:
-        device = disk_info['device']
-        size = disk_info['size']
-        usage_info = usage_infos.get(device, {})
-        if not usage_info:
+    for devname, usage_info in usage_infos.items():
+        disk_info = call_hdsentinel(devname, print_info)
+        if not disk_info:
             continue
+        size = disk_info['size']
         usage = usage_info.get('usage', 0)
         mount_point = usage_info.get('mount_point', "")
         filesystem = usage_info.get('filesystem', "")
@@ -233,6 +212,23 @@ def main(secret, host_name):
     report(secret, machine_info, ndisk_infos)
 
 
+def acquire_port_lock(port):
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind(('localhost', port))
+        sock.listen(1)
+        fcntl.flock(sock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return sock
+    except IOError:
+        print(f"Another process is already listening on port {port}. Exiting.")
+        exit(1)
+
+
+def release_port_lock(sock):
+    fcntl.flock(sock.fileno(), fcntl.LOCK_UN)
+    sock.close()
+
+
 if __name__ == '__main__':
     if not is_root():
         print("must run by root")
@@ -243,10 +239,26 @@ if __name__ == '__main__':
     """)
     parser.add_argument("--host-name", metavar="", help="the host name, default is current host name", default='')
     parser.add_argument("--secret", metavar="", help="secret, use to post to server ")
+    parser.add_argument("-p", "--print", action="store_true",
+                        help="whether print the info, default is False",
+                        default=False)
+    parser.add_argument("--lock-port", metavar="", type=int, help="lock port, default is 8000",
+                        default=8000)
+
     args = parser.parse_args()
     secret = args.secret
+    port = args.lock_port
     if not secret:
         print("please input secret with --secret")
         sys.exit(0)
     host_name = args.host_name
-    main(secret=secret, host_name=host_name)
+    print_info = args.print
+
+    sock = None
+    try:
+        sock = acquire_port_lock(port)
+        print('lock success')
+        main(secret=secret, host_name=host_name, print_info=print_info)
+    finally:
+        if sock:
+            release_port_lock(sock)
