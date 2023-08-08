@@ -31,6 +31,7 @@ def call_grpc(port, service, data={}):
     """call grpc"""
     cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "grpcurl")
     result = subprocess.check_output([cmd, '--plaintext', '-d', json.dumps(data), f'127.0.0.1:{port}', service])
+    print(result)
     dict_result = json.loads(result)
     return dict_result
 
