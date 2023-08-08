@@ -76,7 +76,7 @@ def report(secret, machine_info, node_infos):
 
 def get_nodes(secert, host_name):
     return [{
-        'public': 9092,
+        'public_port': 9092,
         'private_port': 9093
     }]
 
