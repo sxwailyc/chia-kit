@@ -74,12 +74,10 @@ def report(secret, machine_info, node_infos):
         try_times += 1
 
 
-def get_nodes(secert, host_name):
-    return [{
-        'public_port': 9092,
-        'private_port': 9093
-    }]
-
+def get_nodes(secret, host_name):
+    response = requests.get(f"https://api.mingyan.com/api/spacemesh/nodes?secret={secret}&hostname={host_name}")
+    data = json.loads(response.text)
+    return data["data"]["nodes"]
 
 def get_node_info(public_port, private_port):
     try:
@@ -183,7 +181,7 @@ if __name__ == '__main__':
     host_name = args.host_name
     sock = None
     try:
-        sock = acquire_port_lock(port)
+        #sock = acquire_port_lock(port)
         print('lock success')
         main(secret=secret, host_name=host_name)
     finally:
