@@ -96,7 +96,7 @@ def get_node_info(public_port, private_port):
         num_units = post_result["status"]["opts"]["numUnits"]
         max_filesize = post_result["status"]["opts"]["maxFileSize"]
 
-        smeshing_result = call_grpc(public_port, "spacemesh.v1.SmesherService.IsSmeshing")
+        smeshing_result = call_grpc(private_port, "spacemesh.v1.SmesherService.IsSmeshing")
         is_smeshing = smeshing_result["isSmeshing"]
         node_info = {
             'connected_peers': connected_peers,
