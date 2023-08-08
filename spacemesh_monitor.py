@@ -29,10 +29,10 @@ def to_int(s):
 
 def call_grpc(port, service, data={}):
     """call grpc"""
-    cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "hdsentinel-019c-x64")
+    cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "grpcurl")
     result = subprocess.check_output([cmd, '--plaintext', '-d', json.dumps(data), f'127.0.0.1:{port}', service])
     dict_result = json.loads(result)
-    print(dict_result)
+    return dict_result
 
 
 def get_local_ip():
@@ -66,11 +66,53 @@ def report(secret, machine_info, node_infos):
     try_times = 0
     while try_times < 3:
         try:
-            requests.post("https://api.mingyan.com/api/chia/monitor", data)
+            requests.post("https://api.mingyan.com/api/spacemesh/monitor", data)
             break
         except:
             time.sleep(10)
         try_times += 1
+
+
+def get_nodes(secert, host_name):
+    return [{
+        'public': 9092,
+        'private_port': 9093
+    }]
+
+
+def get_node_info(public_port, private_port):
+    try:
+        node_result = call_grpc(public_port, "spacemesh.v1.NodeService.Status")
+        connected_peers = node_result["status"]["connectedPeers"]
+        is_synced = node_result["status"]["isSynced"]
+        synced_layer = node_result["status"]["syncedLayer"]["number"]
+        top_layer = node_result["status"]["topLayer"]["number"]
+        verified_layer = node_result["status"]["verifiedLayer"]["number"]
+
+        post_result = call_grpc(private_port, "spacemesh.v1.SmesherService.PostSetupStatus")
+        post_state = post_result["status"]["state"]
+        data_dir = post_result["status"]["opts"]["dataDir"]
+        num_units = post_result["status"]["opts"]["numUnits"]
+        max_filesize = post_result["status"]["opts"]["maxFileSize"]
+
+        smeshing_result = call_grpc(public_port, "spacemesh.v1.SmesherService.IsSmeshing")
+        is_smeshing = smeshing_result["isSmeshing"]
+        node_info = {
+            'connected_peers': connected_peers,
+            'is_synced': is_synced,
+            'synced_layer': synced_layer,
+            'top_layer': top_layer,
+            'verified_layer': verified_layer,
+            'post_state': post_state,
+            'data_dir': data_dir,
+            'num_units': num_units,
+            'max_filesize': max_filesize,
+            'is_smeshing': is_smeshing,
+        }
+        return True, node_info
+    except Exception as e:
+        print(e)
+    return False, {}
 
 
 def main(secret, host_name):
@@ -78,7 +120,23 @@ def main(secret, host_name):
         host_name = socket.gethostname()
         print(host_name)
 
-    call_grpc(9092, "spacemesh.v1.NodeService.Status")
+    nodes = get_nodes(secret, host_name)
+    node_infos = []
+    all_size = 0
+    for node in nodes:
+        success, node_info = get_node_info(node['public_port'], node['private_port'])
+        if success:
+            num_units = node_info["num_units"]
+            all_size += num_units * 64 * 1024 * 1024
+            node_infos.append(node_info)
+
+    machine_info = {
+        'host_name': host_name,
+        'ip': get_local_ip(),
+        'all_size': all_size,
+    }
+
+    report(secret, machine_info, node_infos)
 
 
 def acquire_port_lock(port):
