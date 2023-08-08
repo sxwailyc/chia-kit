@@ -124,17 +124,21 @@ def main(secret, host_name):
     nodes = get_nodes(secret, host_name)
     node_infos = []
     all_size = 0
+    node_count = 0
     for node in nodes:
         success, node_info = get_node_info(node['public_port'], node['private_port'])
+        node_count += 1
         if success:
             num_units = node_info["num_units"]
             all_size += num_units * 64 * 1024 * 1024
+            node_info['node_id'] = node['id']
             node_infos.append(node_info)
 
     machine_info = {
         'host_name': host_name,
         'ip': get_local_ip(),
         'all_size': all_size,
+        'node_count': node_count
     }
 
     report(secret, machine_info, node_infos)
