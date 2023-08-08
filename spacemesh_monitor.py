@@ -77,6 +77,7 @@ def report(secret, machine_info, node_infos):
 def get_nodes(secret, host_name):
     response = requests.get(f"https://api.mingyan.com/api/spacemesh/nodes?secret={secret}&hostname={host_name}")
     data = json.loads(response.text)
+    print(data)
     return data["data"]["nodes"]
 
 def get_node_info(public_port, private_port):
@@ -124,7 +125,7 @@ def main(secret, host_name):
     all_size = 0
     node_count = 0
     for node in nodes:
-        success, node_info = get_node_info(node['public_port'], node['private_port'])
+        success, node_info = get_node_info(node['publicPort'], node['privatePort'])
         node_count += 1
         if success:
             num_units = node_info["num_units"]
@@ -169,8 +170,8 @@ if __name__ == '__main__':
     """)
     parser.add_argument("--host-name", metavar="", help="the host name, default is current host name", default='')
     parser.add_argument("--secret", metavar="", help="secret, use to post to server ")
-    parser.add_argument("--lock-port", metavar="", type=int, help="lock port, default is 8000",
-                        default=8000)
+    parser.add_argument("--lock-port", metavar="", type=int, help="lock port, default is 9000",
+                        default=9000)
 
     args = parser.parse_args()
     secret = args.secret
