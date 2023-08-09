@@ -91,6 +91,7 @@ def get_node_info(public_port, private_port):
 
         post_result = call_grpc(private_port, "spacemesh.v1.SmesherService.PostSetupStatus")
         post_state = post_result["status"]["state"]
+        num_labels_written = post_result["status"]["numLabelsWritten"]
         data_dir = post_result["status"]["opts"]["dataDir"]
         num_units = post_result["status"]["opts"]["numUnits"]
         max_filesize = post_result["status"]["opts"]["maxFileSize"]
@@ -104,6 +105,7 @@ def get_node_info(public_port, private_port):
             'top_layer': top_layer,
             'verified_layer': verified_layer,
             'post_state': post_state,
+            'num_labels_written': num_labels_written,
             'data_dir': data_dir,
             'num_units': num_units,
             'max_filesize': max_filesize,
