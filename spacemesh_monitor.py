@@ -131,9 +131,10 @@ def main(secret, host_name):
         if success:
             num_units = node_info["num_units"]
             state = node_info['post_state']
-            all_size += num_units * 64 * 1024 * 1024
+            size = num_units * 64 * 1024 * 1024 * 1024
+            all_size += size
             if state == 'STATE_COMPLETE':
-                finish_size += num_units * 64 * 1024 * 1024
+                finish_size += size
 
             node_info['node_id'] = node['id']
             node_infos.append(node_info)
