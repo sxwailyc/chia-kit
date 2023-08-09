@@ -123,13 +123,18 @@ def main(secret, host_name):
     nodes = get_nodes(secret, host_name)
     node_infos = []
     all_size = 0
+    finish_size = 0
     node_count = 0
     for node in nodes:
         success, node_info = get_node_info(node['publicPort'], node['privatePort'])
         node_count += 1
         if success:
             num_units = node_info["num_units"]
+            state = node_info['post_state']
             all_size += num_units * 64 * 1024 * 1024
+            if state == 'STATE_COMPLETE':
+                finish_size += num_units * 64 * 1024 * 1024
+
             node_info['node_id'] = node['id']
             node_infos.append(node_info)
 
@@ -137,6 +142,7 @@ def main(secret, host_name):
         'host_name': host_name,
         'ip': get_local_ip(),
         'all_size': all_size,
+        'finish_size': finish_size,
         'node_count': node_count
     }
 
