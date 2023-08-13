@@ -67,7 +67,8 @@ def report(secret, machine_info, node_infos):
     try_times = 0
     while try_times < 3:
         try:
-            requests.post("https://api.mingyan.com/api/spacemesh/monitor", data)
+            response = requests.post("https://api.mingyan.com/api/spacemesh/monitor", data)
+            print(response.text)
             break
         except:
             time.sleep(10)
