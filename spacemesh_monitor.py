@@ -31,7 +31,7 @@ def call_grpc(port, service, data={}):
     """call grpc"""
     cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "grpcurl")
     result = subprocess.check_output([cmd, '--plaintext', '-d', json.dumps(data), f'127.0.0.1:{port}', service])
-    print(result)
+
     dict_result = json.loads(result)
     return dict_result
 
@@ -68,7 +68,6 @@ def report(secret, machine_info, node_infos):
     while try_times < 3:
         try:
             response = requests.post("https://api.mingyan.com/api/spacemesh/monitor", data)
-            print(response.text)
             break
         except:
             time.sleep(10)
@@ -79,6 +78,7 @@ def get_nodes(secret, host_name):
     response = requests.get(f"https://api.mingyan.com/api/spacemesh/nodes?secret={secret}&hostname={host_name}")
     data = json.loads(response.text)
     return data["data"]["nodes"]
+
 
 def get_node_info(public_port, private_port):
     try:
@@ -194,7 +194,7 @@ if __name__ == '__main__':
     host_name = args.host_name
     sock = None
     try:
-        #sock = acquire_port_lock(port)
+        # sock = acquire_port_lock(port)
         print('lock success')
         main(secret=secret, host_name=host_name)
     finally:
