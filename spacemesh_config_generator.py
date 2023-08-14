@@ -22,6 +22,9 @@ def log(msg):
 
 def generate(output_dir, start_port):
     """generator config"""
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
     grpc_public_listener = start_port
     grpc_private_listener = start_port + 1
     grpc_json_listener = start_port + 2
