@@ -113,7 +113,7 @@ def get_node_info(public_port, private_port):
         }
         return True, node_info
     except Exception as e:
-        print(e)
+        print(f"error:{e}")
     return False, {}
 
 
