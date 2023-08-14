@@ -78,7 +78,6 @@ def report(secret, machine_info, node_infos):
 def get_nodes(secret, host_name):
     response = requests.get(f"https://api.mingyan.com/api/spacemesh/nodes?secret={secret}&hostname={host_name}")
     data = json.loads(response.text)
-    print(data)
     return data["data"]["nodes"]
 
 def get_node_info(public_port, private_port):
@@ -141,6 +140,9 @@ def main(secret, host_name):
 
             node_info['node_id'] = node['id']
             node_infos.append(node_info)
+            print(f"node info:{node_info}")
+        else:
+            print(f"get node info error: {node['publicPort']}")
 
     machine_info = {
         'host_name': host_name,
