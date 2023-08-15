@@ -162,7 +162,8 @@ def report(secret, machine_info, disk_infos):
     try_times = 0
     while try_times < 3:
         try:
-            requests.post("https://api.mingyan.com/api/chia/monitor", data)
+            response = requests.post("https://api.mingyan.com/api/chia/monitor", data)
+            print(response.text)
             break
         except Exception as e:
             print(f'report error {e}')
