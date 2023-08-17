@@ -83,7 +83,7 @@ def get_nodes(secret, host_name):
 def get_node_info(public_port, private_port):
     try:
         node_result = call_grpc(public_port, "spacemesh.v1.NodeService.Status")
-        connected_peers = node_result["status"]["connectedPeers"]
+        connected_peers = node_result["status"].get("connectedPeers", 0)
         is_synced = node_result["status"].get("isSynced", False)
         synced_layer = node_result["status"]["syncedLayer"]["number"]
         top_layer = node_result["status"]["topLayer"]["number"]
