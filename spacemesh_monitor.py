@@ -89,6 +89,9 @@ def get_node_info(public_port, private_port):
         top_layer = node_result["status"]["topLayer"]["number"]
         verified_layer = node_result["status"]["verifiedLayer"]["number"]
 
+        version_result = call_grpc(public_port, "spacemesh.v1.NodeService.Version")
+        version = version_result["versionString"]["value"]
+
         post_result = call_grpc(private_port, "spacemesh.v1.SmesherService.PostSetupStatus")
         post_state = post_result["status"]["state"]
         num_labels_written = post_result["status"].get("numLabelsWritten", 0)
@@ -98,6 +101,7 @@ def get_node_info(public_port, private_port):
 
         smeshing_result = call_grpc(private_port, "spacemesh.v1.SmesherService.IsSmeshing")
         is_smeshing = smeshing_result["isSmeshing"]
+
         node_info = {
             'connected_peers': connected_peers,
             'is_synced': is_synced,
@@ -110,6 +114,7 @@ def get_node_info(public_port, private_port):
             'num_units': num_units,
             'max_filesize': max_filesize,
             'is_smeshing': is_smeshing,
+            'version': version
         }
         return True, node_info
     except Exception as e:
