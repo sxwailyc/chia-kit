@@ -93,9 +93,9 @@
       "/dns4/mainnet-bootnode-16.spacemesh.network/tcp/5000/p2p/12D3KooWDAFRuFrMNgVQMDy8cgD71GLtPyYyfQzFxMZr2yUBgjHK",
       "/dns4/mainnet-bootnode-18.spacemesh.network/tcp/5000/p2p/12D3KooWMJmdfwxDctuGGoTYJD8Wj9jubQBbPfrgrzzXaQ1RTKE6"
     ],
-    "min-peers": 3,
-    "low-peers": 6,
-    "high-peers": 9,
+    "min-peers": 30,
+    "low-peers": 80,
+    "high-peers": 80,
     "inbound-fraction": 1.1,
     "outbound-fraction": 1.1
   },
