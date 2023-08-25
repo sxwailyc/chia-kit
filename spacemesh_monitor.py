@@ -27,10 +27,10 @@ def to_int(s):
         return 0
 
 
-def call_grpc(port, service, data={}):
+def call_grpc(port, service, data={}, max_time=10):
     """call grpc"""
     cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "grpcurl")
-    result = subprocess.check_output([cmd, '--plaintext', '-d', json.dumps(data), f'127.0.0.1:{port}', service])
+    result = subprocess.check_output([cmd, '--max-time', max_time, '--plaintext', '-d', json.dumps(data), f'127.0.0.1:{port}', service])
 
     dict_result = json.loads(result)
     return dict_result
@@ -201,7 +201,7 @@ if __name__ == '__main__':
     try:
         # sock = acquire_port_lock(port)
         print('lock success')
-        main(secret=secret, host_name=host_name)
+        #main(secret=secret, host_name=host_name)
     finally:
         if sock:
             release_port_lock(sock)
