@@ -30,7 +30,7 @@ def to_int(s):
 def call_grpc(port, service, data={}):
     """call grpc"""
     cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "grpcurl")
-    result = subprocess.check_output([cmd, '--plaintext', '-d', json.dumps(data), f'127.0.0.1:{port}', service])
+    result = subprocess.check_output([cmd, '--plaintext', '-d', json.dumps(data), f'127.0.0.1:{port}', service], timeout=5)
 
     dict_result = json.loads(result)
     return dict_result
@@ -218,7 +218,10 @@ if __name__ == '__main__':
         # sock = acquire_port_lock(port)
         print('lock success')
         #main(secret=secret, host_name=host_name)
-        test()
+        #test()
+        post_result = call_grpc(9096, "spacemesh.v1.AdminService.EventsStream")
+        print(post_result)
+
     finally:
         if sock:
             release_port_lock(sock)
