@@ -27,10 +27,10 @@ def to_int(s):
         return 0
 
 
-def call_grpc(port, service, data={}, max_time=10):
+def call_grpc(port, service, data={}):
     """call grpc"""
     cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "grpcurl")
-    result = subprocess.check_output([cmd, '--max-time', max_time, '--plaintext', '-d', json.dumps(data), f'127.0.0.1:{port}', service])
+    result = subprocess.check_output([cmd, '--plaintext', '-d', json.dumps(data), f'127.0.0.1:{port}', service])
 
     dict_result = json.loads(result)
     return dict_result
@@ -177,6 +177,22 @@ def release_port_lock(sock):
     sock.close()
 
 
+def test():
+    cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "grpcurl")
+    port = 9096
+    service = 'spacemesh.v1.AdminService.EventsStream'
+    p = subprocess.Popen([cmd, '--plaintext', '-d', json.dumps({}), f'127.0.0.1:{port}', service], stdout=subprocess.PIPE)
+    disks = []
+    # device, temperature, health, power_time, model_id, serial_no, size
+    while True:
+        line = p.stdout.readline()
+        if not line:
+            break
+        line = line.decode('utf-8')
+        line = line.replace("\n", "")
+        print(line)
+
+
 if __name__ == '__main__':
     if not is_root():
         print("must run by root")
@@ -202,6 +218,7 @@ if __name__ == '__main__':
         # sock = acquire_port_lock(port)
         print('lock success')
         #main(secret=secret, host_name=host_name)
+        test()
     finally:
         if sock:
             release_port_lock(sock)
