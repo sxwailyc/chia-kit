@@ -29,8 +29,6 @@ def test():
             line = p.stdout.readline()
             if line:
                 print(line)
-            else:
-                break
         else:
             diff = time.time() - start
             if diff > 2:
