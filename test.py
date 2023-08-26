@@ -33,10 +33,11 @@ def test():
                 break
         else:
             diff = time.time() - start
-            if diff > 2000:
+            if diff > 2:
                 break
             else:
-                print(diff)
+                pass
+                #(diff)
 
 if __name__ == '__main__':
     test()
