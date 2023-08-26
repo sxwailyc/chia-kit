@@ -30,6 +30,8 @@ def test():
                 print(line)
             else:
                 break
+        else:
+            break
 
 if __name__ == '__main__':
     test()
