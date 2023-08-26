@@ -22,6 +22,7 @@ def test():
     p = subprocess.Popen([cmd, '--plaintext', '-d', json.dumps(data), '127.0.0.1:9096', service], stdout=subprocess.PIPE)
     poll_obj = select.poll()
     poll_obj.register(p.stdout, select.POLLIN)
+    start = time.time()
     while True:
         poll_result = poll_obj.poll(0)
         if poll_result:
@@ -31,7 +32,9 @@ def test():
             else:
                 break
         else:
-            break
+            diff = time.time() - start
+            if diff > 2000:
+                break
 
 if __name__ == '__main__':
     test()
