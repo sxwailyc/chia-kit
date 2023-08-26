@@ -31,7 +31,7 @@ def test():
                 print(line)
         else:
             diff = time.time() - start
-            if diff > 2:
+            if diff > 5:
                 break
             else:
                 pass
