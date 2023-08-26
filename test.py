@@ -32,7 +32,8 @@ def test():
         else:
             diff = time.time() - start
             if diff > 5:
-                break
+                pass
+                #break
             else:
                 pass
                 #(diff)
