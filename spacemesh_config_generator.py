@@ -50,7 +50,14 @@ def generate(output_dir, start_port, direct_port=7514, direct_id=None):
         content = content.replace('${grpc-private-listener}', '%s' % grpc_private_listener)
         content = content.replace('${grpc-json-listener}', '%s' % grpc_json_listener)
 
+        min_peers = 30
+        lower_peers = 80
+        high_peers = 80
+
         if direct_id:
+            min_peers = 1
+            lower_peers = 10
+            high_peers = 20
             node_settings = f""""disable-dht": true,
     "bootnodes": [],
     "direct": [
@@ -60,6 +67,9 @@ def generate(output_dir, start_port, direct_port=7514, direct_id=None):
             node_settings = boot_nodes
 
         content = content.replace('${node-settings}', '%s' % node_settings)
+        content = content.replace('${min-peers}', '%s' % min_peers)
+        content = content.replace('${lower-peers}', '%s' % lower_peers)
+        content = content.replace('${high-peers}', '%s' % high_peers)
 
         target = os.path.join(output_dir, "config.mainnet.json")
         with open(target, "w") as of:
