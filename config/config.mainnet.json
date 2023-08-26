@@ -82,9 +82,9 @@
     "p2p-disable-legacy-discovery": true,
     "autoscale-peers": true,
     ${node-settings}
-    "min-peers": 30,
-    "low-peers": 80,
-    "high-peers": 80,
+    "min-peers": ${min-peers},
+    "low-peers": ${low-peers},
+    "high-peers": ${high-peers},
     "inbound-fraction": 1.1,
     "outbound-fraction": 1.1
   },
