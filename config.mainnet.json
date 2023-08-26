@@ -69,19 +69,23 @@
       "transaction",
       "activation"
     ],
-    "grpc-public-listener": "0.0.0.0:${grpc-public-listener}",
+    "grpc-public-listener": "0.0.0.0:9092",
     "grpc-private-services": [
       "smesher",
       "admin"
     ],
-    "grpc-private-listener": "127.0.0.1:${grpc-private-listener}",
-    "grpc-json-listener": "0.0.0.0:${grpc-json-listener}"
+    "grpc-private-listener": "127.0.0.1:9093",
+    "grpc-json-listener": "0.0.0.0:9094"
   },
   "p2p": {
     "disable-reuseport": false,
     "p2p-disable-legacy-discovery": true,
     "autoscale-peers": true,
-    ${node-settings}
+    "disable-dht": true,
+    "bootnodes": [],
+    "direct": [
+        "/ip4/0.0.0.0/tcp/7514/p2p/123"
+    ],
     "min-peers": 30,
     "low-peers": 80,
     "high-peers": 80,
