@@ -1,16 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import fcntl
-import sys
-import socket
-import json
-import time
-
-import requests
-import subprocess
-
 import argparse
+import ipaddress
 import os
 from datetime import datetime
 
@@ -18,6 +10,15 @@ from datetime import datetime
 def log(msg):
     s = "[%s]%s" % (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), msg)
     print(s)
+
+
+def is_valid_ip(address):
+    try:
+        ipaddress.ip_address(address)
+        return True
+    except ValueError:
+        return False
+
 
 boot_nodes = """"bootnodes": [
       "/dns4/mainnet-bootnode-0.spacemesh.network/tcp/5000/p2p/12D3KooWPStnitMbLyWAGr32gHmPr538mT658Thp6zTUujZt3LRf",
@@ -31,6 +32,7 @@ boot_nodes = """"bootnodes": [
       "/dns4/mainnet-bootnode-16.spacemesh.network/tcp/5000/p2p/12D3KooWDAFRuFrMNgVQMDy8cgD71GLtPyYyfQzFxMZr2yUBgjHK",
       "/dns4/mainnet-bootnode-18.spacemesh.network/tcp/5000/p2p/12D3KooWMJmdfwxDctuGGoTYJD8Wj9jubQBbPfrgrzzXaQ1RTKE6"
     ],"""
+
 
 def generate(output_dir, start_port, directs=[]):
     """generator config"""
@@ -65,7 +67,8 @@ def generate(output_dir, start_port, directs=[]):
                 direct_ip = datas[0]
                 direct_port = datas[1]
                 direct_id = datas[2]
-                direct_list.append(f"/ip4/{direct_ip}/tcp/{direct_port}/p2p/{direct_id}")
+                protocol = "ip4" if is_valid_ip(direct_ip) else "dns4"
+                direct_list.append(f"/{protocol}/{direct_ip}/tcp/{direct_port}/p2p/{direct_id}")
 
             direct = ",\n".join(["        \"%s\"" % s for s in direct_list])
             print(direct)
