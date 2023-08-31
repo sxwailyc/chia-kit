@@ -34,13 +34,15 @@ def test():
     # ... do other things here
 
     # read line without blocking
-    try:
-        #line = q.get_nowait()  # or
-        line = q.get(timeout=1)
-    except Empty:
-        print('no output yet')
-    else:  # got line
-        print(line)
+    while True:
+        try:
+            #line = q.get_nowait()  # or
+            line = q.get(timeout=1)
+        except Empty:
+            break
+            #print('no output yet')
+        else:  # got line
+            print(line)
 
 
 # ... do something with line
