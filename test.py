@@ -1,42 +1,47 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import fcntl
-import sys
-import socket
 import json
-import time
-
-import requests
 import subprocess
 
-import argparse
+import sys
+from subprocess import PIPE, Popen
+from threading import Thread
+from queue import Queue, Empty
+
 import os
-from datetime import datetime
-import select
 
 def test():
     cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "grpcurl")
     data = {}
     service = "spacemesh.v1.AdminService.EventsStream"
     p = subprocess.Popen([cmd, '--plaintext', '-d', json.dumps(data), '127.0.0.1:9096', service], stdout=subprocess.PIPE)
-    poll_obj = select.poll()
-    poll_obj.register(p.stdout, select.POLLIN)
-    start = time.time()
-    while True:
-        poll_result = poll_obj.poll(0)
-        if poll_result:
-            line = p.stdout.readline()
-            if line:
-                print(line)
-        else:
-            diff = time.time() - start
-            if diff > 5:
-                pass
-                #break
-            else:
-                pass
-                #(diff)
+
+    ON_POSIX = 'posix' in sys.builtin_module_names
+
+    def enqueue_output(out, queue):
+        for line in iter(out.readline, b''):
+            queue.put(line)
+        out.close()
+
+    p = Popen(['myprogram.exe'], stdout=PIPE, bufsize=1, close_fds=ON_POSIX)
+    q = Queue()
+    t = Thread(target=enqueue_output, args=(p.stdout, q))
+    t.daemon = True  # thread dies with the program
+    t.start()
+
+    # ... do other things here
+
+    # read line without blocking
+    try:
+        line = q.get_nowait()  # or q.get(timeout=.1)
+    except Empty:
+        print('no output yet')
+    else:  # got line
+        print(line)
+
+
+# ... do something with line
 
 if __name__ == '__main__':
     test()
