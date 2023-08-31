@@ -35,7 +35,8 @@ def test():
 
     # read line without blocking
     try:
-        line = q.get_nowait()  # or q.get(timeout=.1)
+        #line = q.get_nowait()  # or
+        line = q.get(timeout=1)
     except Empty:
         print('no output yet')
     else:  # got line
