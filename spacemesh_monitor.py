@@ -9,6 +9,8 @@ import time
 
 import requests
 import subprocess
+from threading import Thread
+from queue import Queue, Empty
 
 import argparse
 import os
@@ -34,6 +36,36 @@ def call_grpc(port, service, data={}):
 
     dict_result = json.loads(result)
     return dict_result
+
+
+def call_grpc_stream(port, service, data={}):
+    """call grpc"""
+    cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "grpcurl")
+    ON_POSIX = 'posix' in sys.builtin_module_names
+    p = subprocess.Popen([cmd, '--plaintext', '-d', json.dumps(data), f'127.0.0.1:{port}', service],
+                         stdout=subprocess.PIPE, close_fds=ON_POSIX)
+
+    def enqueue_output(out, queue):
+        for line in iter(out.readline, b''):
+            queue.put(line)
+        out.close()
+
+    q = Queue()
+    t = Thread(target=enqueue_output, args=(p.stdout, q))
+    t.daemon = True  # thread dies with the program
+    t.start()
+
+    result = ""
+    while True:
+        try:
+            line = q.get(timeout=1)
+        except Empty:
+            break
+        else:  # got line
+            line = line.encode("utf8")
+            result += line
+
+    return result
 
 
 def get_local_ip():
@@ -108,6 +140,8 @@ def get_node_info(public_port, private_port):
         smeshing_result = call_grpc(private_port, "spacemesh.v1.SmesherService.IsSmeshing")
         is_smeshing = smeshing_result.get("isSmeshing", 0)
 
+        events = call_grpc_stream(private_port, "spacemesh.v1.AdminService.EventsStream")
+
         node_info = {
             'connected_peers': connected_peers,
             'is_synced': is_synced,
@@ -120,7 +154,8 @@ def get_node_info(public_port, private_port):
             'num_units': num_units,
             'max_filesize': max_filesize,
             'is_smeshing': is_smeshing,
-            'version': version
+            'version': version,
+            'events': events
         }
         return True, node_info
     except Exception as e:
