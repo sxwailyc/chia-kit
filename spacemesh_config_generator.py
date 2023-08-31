@@ -32,7 +32,7 @@ boot_nodes = """"bootnodes": [
       "/dns4/mainnet-bootnode-18.spacemesh.network/tcp/5000/p2p/12D3KooWMJmdfwxDctuGGoTYJD8Wj9jubQBbPfrgrzzXaQ1RTKE6"
     ],"""
 
-def generate(output_dir, start_port, direct_port=7514, direct_id=None):
+def generate(output_dir, start_port, directs=[]):
     """generator config"""
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -54,14 +54,26 @@ def generate(output_dir, start_port, direct_port=7514, direct_id=None):
         low_peers = 80
         high_peers = 80
 
-        if direct_id:
+        if directs:
             min_peers = 1
             low_peers = 10
             high_peers = 20
+
+            direct_list = []
+            for direct in directs:
+                datas = direct.split(":")
+                direct_ip = datas[0]
+                direct_port = datas[1]
+                direct_id = datas[2]
+                direct_list.append(f"/ip4/{direct_ip}/tcp/{direct_port}/p2p/{direct_id}")
+
+            direct = ",\n".join(["        \"%s\"" % s for s in direct_list])
+            print(direct)
+
             node_settings = f""""disable-dht": true,
     "bootnodes": [],
     "direct": [
-        "/ip4/0.0.0.0/tcp/{direct_port}/p2p/{direct_id}"
+{direct}
     ],"""
         else:
             node_settings = boot_nodes
@@ -92,14 +104,12 @@ if __name__ == '__main__':
     parser.add_argument("-o", "--output-dir", metavar="", help="output dir", default='./')
     parser.add_argument("-p", "--start-port", metavar="", type=int, help="start port, default is 9092",
                         default=9092)
-    parser.add_argument("--direct-port", metavar="", type=int, help="direct port, default is 0",
-                        default=0)
-    parser.add_argument("--direct-id", metavar="", help="direct id, default is empty",
-                        default=0)
+    parser.add_argument("-d", "--direct", nargs='+', action='append', help="directs")
 
     args = parser.parse_args()
     output_dir = args.output_dir
     start_port = args.start_port
-    direct_port = args.direct_port
-    direct_id = args.direct_id
-    generate(output_dir, start_port, direct_port=direct_port, direct_id=direct_id)
+    directs = args.direct
+    if directs:
+        directs = [x[0] for x in directs]
+    generate(output_dir, start_port, directs=directs)
