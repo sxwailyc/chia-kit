@@ -16,6 +16,8 @@ def test():
     data = {}
     service = "spacemesh.v1.AdminService.EventsStream"
 
+    print(sys.builtin_module_names)
+
     ON_POSIX = 'posix' in sys.builtin_module_names
 
     p = subprocess.Popen([cmd, '--plaintext', '-d', json.dumps(data), '127.0.0.1:9096', service], stdout=subprocess.PIPE, close_fds=ON_POSIX)
