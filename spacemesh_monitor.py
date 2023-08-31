@@ -93,7 +93,7 @@ def get_node_info(public_port, private_port):
         version = version_result["versionString"]["value"]
 
         post_result = call_grpc(private_port, "spacemesh.v1.SmesherService.PostSetupStatus")
-        post_state = post_result["status"].get["state"]
+        post_state = post_result["status"]["state"]
         num_labels_written = post_result["status"].get("numLabelsWritten", 0)
         opts = post_result["status"]["opts"]
         if opts:
