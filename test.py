@@ -44,6 +44,7 @@ def test():
             break
             #print('no output yet')
         else:  # got line
+            line = line.encode("utf8")
             print(line)
 
 
