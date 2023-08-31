@@ -18,7 +18,7 @@ def test():
 
     ON_POSIX = 'posix' in sys.builtin_module_names
 
-    p = subprocess.Popen([cmd, '--plaintext', '-d', json.dumps(data), '127.0.0.1:9096', service], stdout=subprocess.PIPE, bufsize=1, close_fds=ON_POSIX)
+    p = subprocess.Popen([cmd, '--plaintext', '-d', json.dumps(data), '127.0.0.1:9096', service], stdout=subprocess.PIPE, close_fds=ON_POSIX)
 
     def enqueue_output(out, queue):
         for line in iter(out.readline, b''):
