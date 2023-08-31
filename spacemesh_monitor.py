@@ -62,7 +62,7 @@ def call_grpc_stream(port, service, data={}):
         except Empty:
             break
         else:  # got line
-            line = line.encode("utf8")
+            line = line.decode("utf8")
             result += line
 
     return result
