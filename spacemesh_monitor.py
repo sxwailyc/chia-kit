@@ -7,6 +7,7 @@ import socket
 import json
 import time
 
+import signal
 import requests
 import subprocess
 from threading import Thread
@@ -38,7 +39,7 @@ def call_grpc(port, service, data={}):
     return dict_result
 
 
-def call_grpc_stream(port, service, data={}):
+def call_grpc_stream(port, service, pgids, data={}):
     """call grpc"""
     cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "grpcurl")
     ON_POSIX = 'posix' in sys.builtin_module_names
@@ -64,6 +65,8 @@ def call_grpc_stream(port, service, data={}):
         else:  # got line
             line = line.decode("utf8")
             result += line
+
+    pgids.add(os.getpgid(p.pid))
 
     return result
 
@@ -112,7 +115,7 @@ def get_nodes(secret, host_name):
     return data["data"]["nodes"]
 
 
-def get_node_info(public_port, private_port):
+def get_node_info(public_port, private_port, pgids):
     try:
         node_result = call_grpc(public_port, "spacemesh.v1.NodeService.Status")
         connected_peers = node_result["status"].get("connectedPeers", 0)
@@ -140,7 +143,7 @@ def get_node_info(public_port, private_port):
         smeshing_result = call_grpc(private_port, "spacemesh.v1.SmesherService.IsSmeshing")
         is_smeshing = smeshing_result.get("isSmeshing", 0)
 
-        events = call_grpc_stream(private_port, "spacemesh.v1.AdminService.EventsStream")
+        events = call_grpc_stream(private_port, "spacemesh.v1.AdminService.EventsStream", pgids)
 
         node_info = {
             'connected_peers': connected_peers,
@@ -173,8 +176,9 @@ def main(secret, host_name):
     all_size = 0
     finish_size = 0
     node_count = 0
+    pgids = set()
     for node in nodes:
-        success, node_info = get_node_info(node['publicPort'], node['privatePort'])
+        success, node_info = get_node_info(node['publicPort'], node['privatePort'], pgids)
         node_count += 1
         if success:
             num_units = node_info["num_units"]
@@ -200,6 +204,8 @@ def main(secret, host_name):
 
     report(secret, machine_info, node_infos)
 
+    for pgid in pgids:
+        os.killpg(pgid, signal.SIGTERM)
 
 def acquire_port_lock(port):
     try:
