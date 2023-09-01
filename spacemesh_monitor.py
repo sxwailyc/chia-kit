@@ -7,6 +7,7 @@ import socket
 import json
 import time
 
+import signal
 import requests
 import subprocess
 from threading import Thread
@@ -64,6 +65,11 @@ def call_grpc_stream(port, service, data={}):
         else:  # got line
             line = line.decode("utf8")
             result += line
+
+    try:
+        os.killpg(os.getpgid(p.pid), signal.SIGTERM)
+    except:
+        pass
 
     return result
 
