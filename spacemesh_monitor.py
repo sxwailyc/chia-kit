@@ -202,11 +202,10 @@ def main(secret, host_name):
         'node_count': node_count
     }
 
-    print(pgids)
-
-
     report(secret, machine_info, node_infos)
 
+    for pgid in pgids:
+        os.killpg(pgid, signal.SIGTERM)
 
 def acquire_port_lock(port):
     try:
