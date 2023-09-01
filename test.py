@@ -8,6 +8,7 @@ import sys
 from subprocess import PIPE, Popen
 from threading import Thread
 from queue import Queue, Empty
+import signal
 
 import os
 
@@ -46,6 +47,8 @@ def test():
         else:  # got line
             line = line.decode("utf8")
             print(line)
+
+    os.killpg(p.pid, signal.SIGTERM)
 
 
 # ... do something with line
