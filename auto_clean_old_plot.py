@@ -57,7 +57,7 @@ def main(count=100, max_count=5):
         disk = "/mnt/chia%s/" % format_number(i)
         if not os.path.exists(disk):
             continue
-        dir_name = "%%c8" % disk
+        dir_name = "%sc8" % disk
         free = get_free(disk)
         log("disk: %s, free size: %sGB" % (disk, free))
         if free <= 55:
