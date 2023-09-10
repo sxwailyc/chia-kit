@@ -57,10 +57,10 @@ def main(count=100, max_count=5):
         disk = "/mnt/chia%s/" % format_number(i)
         if not os.path.exists(disk):
             continue
-        dir_name = "%schia_plot_k32_new" % disk
+        dir_name = "%c8" % disk
         free = get_free(disk)
         log("disk: %s, free size: %sGB" % (disk, free))
-        if free <= 73:
+        if free <= 55:
             if remove_one_plot(dir_name):
                 empty_count += 1
         if empty_count >= max_count:
