@@ -106,14 +106,17 @@ def get_usage_infos():
 
 def get_chia_count(base_dir):
     count = 0
+    nossd_count = 0
     if not dir or not os.path.isdir(base_dir):
-        return count
+        return count, nossd_count
     names = os.listdir(base_dir)
     for name in names:
         name = os.path.join(base_dir, name)
         if os.path.isfile(name):
             if name.endswith(".plot"):
                 count += 1
+            elif name.endswith(".fpt"):
+                nossd_count += 1
         else:
             if not os.path.exists(name):
                 continue
@@ -123,14 +126,18 @@ def get_chia_count(base_dir):
                 if os.path.isfile(file):
                     if file.endswith(".plot"):
                         count += 1
+                    elif name.endswith(".fpt"):
+                        nossd_count += 1
                 else:
                     sub_files = os.listdir(file)
                     for sub_file in sub_files:
                         sub_file = os.path.join(file, sub_file)
                         if os.path.isfile(sub_file) and sub_file.endswith(".plot"):
                             count += 1
+                        elif os.path.isfile(sub_file) and name.endswith(".fpt"):
+                            nossd_count += 1
 
-    return count
+    return count, nossd_count
 
 
 def format_device(device):
@@ -181,6 +188,7 @@ def main(secret, host_name, print_info):
     all_size = 0
     all_usage = 0
     all_plot_count = 0
+    all_nossd_count = 0
     ndisk_infos = []
     for devname, usage_info in usage_infos.items():
         disk_info = call_hdsentinel(devname, print_info)
@@ -190,13 +198,15 @@ def main(secret, host_name, print_info):
         usage = usage_info.get('usage', 0)
         mount_point = usage_info.get('mount_point', "")
         filesystem = usage_info.get('filesystem', "")
-        plot_count = get_chia_count(mount_point)
+        plot_count, nossd_count = get_chia_count(mount_point)
         disk_count += 1
         all_plot_count += plot_count
+        all_nossd_count += nossd_count
         all_size += size
         all_usage += usage
         disk_info["usage"] = usage
         disk_info["plot_count"] = plot_count
+        disk_info["nossd_count"] = nossd_count
         disk_info["mount_point"] = mount_point
         disk_info["filesystem"] = filesystem
         ndisk_infos.append(disk_info)
@@ -205,6 +215,7 @@ def main(secret, host_name, print_info):
         'host_name': host_name,
         'ip': get_local_ip(),
         'plot_count': all_plot_count,
+        'nossd_count': all_nossd_count,
         'disk_count': disk_count,
         'all_usage': all_usage,
         'all_size': all_size,
