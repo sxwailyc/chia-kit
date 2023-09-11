@@ -126,7 +126,7 @@ def get_chia_count(base_dir):
                 if os.path.isfile(file):
                     if file.endswith(".plot"):
                         count += 1
-                    elif name.endswith(".fpt"):
+                    elif file.endswith(".fpt"):
                         nossd_count += 1
                 else:
                     sub_files = os.listdir(file)
@@ -134,7 +134,7 @@ def get_chia_count(base_dir):
                         sub_file = os.path.join(file, sub_file)
                         if os.path.isfile(sub_file) and sub_file.endswith(".plot"):
                             count += 1
-                        elif os.path.isfile(sub_file) and name.endswith(".fpt"):
+                        elif os.path.isfile(sub_file) and sub_file.endswith(".fpt"):
                             nossd_count += 1
 
     return count, nossd_count
