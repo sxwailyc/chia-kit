@@ -47,7 +47,7 @@ def main(count=100, max_count=5):
         if not os.path.exists(disk):
             continue
         free = get_free(disk)
-        if free > 73:
+        if free > 55:
             empty_count += 1
 
     if empty_count >= max_count:
