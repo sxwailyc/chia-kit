@@ -254,6 +254,12 @@ class MoveAssistant:
 
         return disks[0]['hdd_dir']
 
+    def check_auto_remove(self, file_size):
+        if file_size <= 0:
+            return
+        if self.auto_remove_grep:
+            self.auto_remove_old(file_size, self.auto_remove_grep)
+
     def main(self):
         single_file_size = 0
         for temp_dir in self.temp_dir_list:
@@ -272,14 +278,14 @@ class MoveAssistant:
                         single_file_size = file_size
                     target = self.select_one_hdd(file_size)
                     if not target:
+                        self.check_auto_remove(single_file_size)
                         return
                     else:
                         dist = os.path.join(target, self.sub_dir_name)
                         log("move to:%s" % dist)
                         self.add_move_task(file, target)
 
-        if self.auto_remove_grep and single_file_size > 0:
-            self.auto_remove_old(single_file_size, self.auto_remove_grep)
+        self.check_auto_remove(single_file_size)
 
     def start(self):
         log('start')
