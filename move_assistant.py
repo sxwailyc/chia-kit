@@ -37,10 +37,23 @@ def remove_one_plot(_dir, grep):
     names = os.listdir(_dir)
     for name in names:
         name = os.path.join(_dir, name)
-        if os.path.isfile(name) and name.find(grep) >= 0:
-            log("start to remove old plot file: %s" % name)
-            os.remove(name)
-            return True
+        if os.path.isfile(name):
+            if name.find(grep) >= 0:
+                log("start to remove old plot file: %s" % name)
+                os.remove(name)
+                return True
+        else:
+            if not os.path.exists(name):
+                continue
+            files = os.listdir(name)
+            for file in files:
+                file = os.path.join(name, file)
+                if os.path.isfile(file):
+                    if file.find(grep) >= 0:
+                        log("start to remove old plot file: %s" % file)
+                        os.remove(file)
+                        return True
+
     return False
 
 
