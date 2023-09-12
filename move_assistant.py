@@ -217,6 +217,10 @@ class MoveAssistant:
             hdd_dir = hdd_dir_info['hdd_dir']
             if not os.path.exists(hdd_dir):
                 continue
+
+            if hdd_dir in self.current_dirs:
+                continue
+
             free = get_free(hdd_dir)
             if free > file_size:
                 empty_count += 1
@@ -230,6 +234,10 @@ class MoveAssistant:
             hdd_dir = hdd_dir_info['hdd_dir']
             if not os.path.exists(hdd_dir):
                 continue
+
+            if hdd_dir in self.current_dirs:
+                continue
+
             free = get_free(hdd_dir)
             if free <= file_size:
                 if remove_one_plot(hdd_dir, grep):
@@ -271,7 +279,7 @@ class MoveAssistant:
         if file_size <= 0:
             return
         if self.auto_remove_grep:
-            self.auto_remove_old(file_size, self.auto_remove_grep, self.max_concurrency)
+            self.auto_remove_old(file_size, self.auto_remove_grep)
 
     def main(self):
         single_file_size = 0
