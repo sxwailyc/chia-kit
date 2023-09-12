@@ -311,7 +311,7 @@ if __name__ == '__main__':
                         help="skip check the target dir is a mount point, default is False",
                         default=False)
 
-    parser.add_argument("--auto-remove-grep", help="auto remove old file grep string", default="")
+    parser.add_argument("--auto-remove-grep", metavar="", help="auto remove old file grep string", default="")
 
     args = parser.parse_args()
 
