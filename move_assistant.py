@@ -21,12 +21,40 @@ def size_to_gb(size):
 def size_to_mb(size):
     return round(size / 1024 / 1024, 2)
 
+
 def print_success(msg):
     return "\033[32m%s\033[0m" % msg
 
 
 def print_error(msg):
     return "\033[31m%s\033[0m" % msg
+
+
+def remove_one_plot(_dir, grep):
+    """remove one plot file """
+    if not _dir or not os.path.isdir(_dir):
+        return False
+    names = os.listdir(_dir)
+    for name in names:
+        name = os.path.join(_dir, name)
+        if os.path.isfile(name):
+            if name.find(grep) >= 0:
+                log("start to remove old plot file: %s" % name)
+                os.remove(name)
+                return True
+        else:
+            if not os.path.exists(name):
+                continue
+            files = os.listdir(name)
+            for file in files:
+                file = os.path.join(name, file)
+                if os.path.isfile(file):
+                    if file.find(grep) >= 0:
+                        log("start to remove old plot file: %s" % file)
+                        os.remove(file)
+                        return True
+
+    return False
 
 
 def move(source, target, sub_dir_name, current_dirs, current_files, suffix):
@@ -50,7 +78,8 @@ def move(source, target, sub_dir_name, current_dirs, current_files, suffix):
         os.renames(dist_temp, dist_name)
         cost_time = time.time() - start
         speed = filesize / cost_time
-        log("move %s [file: %s, size: %.2fGB, cost time: %.2fs, speed: %.2fMB/s]" % (print_success('success'), source, size_to_gb(filesize), cost_time, size_to_mb(speed)))
+        log("move %s [file: %s, size: %.2fGB, cost time: %.2fs, speed: %.2fMB/s]" % (
+        print_success('success'), source, size_to_gb(filesize), cost_time, size_to_mb(speed)))
 
     except Exception as e:
         log('move %s:%s' % (print_error('error'), e))
@@ -150,7 +179,7 @@ class MoveAssistant:
     AVG = 2
 
     def __init__(self, temp_dir_list, hdd_dir_list, sub_dir_name='', scan_interval=30, max_concurrency=5,
-                 move_strategy=1, suffix='plot', skip_mount_point_check=False):
+                 move_strategy=1, suffix='plot', skip_mount_point_check=False, auto_remove_grep=''):
         self.max_concurrency = max_concurrency
         self.temp_dir_list = temp_dir_list
         self.hdd_dir_info_list = parse_hdd_dir(hdd_dir_list)
@@ -159,6 +188,7 @@ class MoveAssistant:
         self.move_strategy = move_strategy
         self.suffix = suffix
         self.skip_mount_point_check = skip_mount_point_check
+        self.auto_remove_grep = auto_remove_grep
         self.pool = multiprocessing.Pool(max_concurrency)  # processing pool
         self.current_dirs = multiprocessing.Manager().list()
         self.current_files = multiprocessing.Manager().list()
@@ -180,6 +210,33 @@ class MoveAssistant:
             free = (max_file_count - len(files)) * 102
             enable = free > 0
         return enable, free
+
+    def auto_remove_old(self, file_size, grep, max_remove=3):
+        empty_count = 0
+        for hdd_dir_info in self.hdd_dir_info_list:
+            hdd_dir = hdd_dir_info['hdd_dir']
+            if not os.path.exists(hdd_dir):
+                continue
+            free = get_free(hdd_dir)
+            if free > file_size:
+                empty_count += 1
+                if empty_count >= max_remove:
+                    break
+
+        if empty_count >= max_remove:
+            return
+
+        for hdd_dir_info in self.hdd_dir_info_list:
+            hdd_dir = hdd_dir_info['hdd_dir']
+            if not os.path.exists(hdd_dir):
+                continue
+            free = get_free(hdd_dir)
+            if free <= file_size:
+                if remove_one_plot(hdd_dir, grep):
+                    empty_count += 1
+
+            if empty_count >= max_remove:
+                return
 
     def select_one_hdd(self, file_size):
         disks = []
@@ -210,8 +267,14 @@ class MoveAssistant:
 
         return disks[0]['hdd_dir']
 
-    def main(self):
+    def check_auto_remove(self, file_size):
+        if file_size <= 0:
+            return
+        if self.auto_remove_grep:
+            self.auto_remove_old(file_size, self.auto_remove_grep)
 
+    def main(self):
+        single_file_size = 0
         for temp_dir in self.temp_dir_list:
             files = get_files(temp_dir, self.suffix)
             if not files:
@@ -224,13 +287,18 @@ class MoveAssistant:
                 time_diff = now - modify_time
                 if is_need_move(time_diff):
                     file_size = get_file_size(file)
+                    if single_file_size == 0:
+                        single_file_size = file_size
                     target = self.select_one_hdd(file_size)
                     if not target:
+                        self.check_auto_remove(single_file_size)
                         return
                     else:
                         dist = os.path.join(target, self.sub_dir_name)
                         log("move to:%s" % dist)
                         self.add_move_task(file, target)
+
+        self.check_auto_remove(single_file_size)
 
     def start(self):
         log('start')
@@ -262,6 +330,8 @@ if __name__ == '__main__':
                         help="skip check the target dir is a mount point, default is False",
                         default=False)
 
+    parser.add_argument("--auto-remove-grep", metavar="", help="auto remove old file grep string", default="")
+
     args = parser.parse_args()
 
     temp_dir_list = args.temp_dir_list.split(",")
@@ -272,6 +342,8 @@ if __name__ == '__main__':
     move_strategy = args.move_strategy
     suffix = args.suffix
     skip_mount_point_check = args.skip_mount_point_check
+    auto_remove_grep = args.auto_remove_grep
+
     assistant = MoveAssistant(temp_dir_list, hdd_dir_list, sub_dir_name, scan_interval, max_concurrency,
-                              move_strategy, suffix, skip_mount_point_check)
+                              move_strategy, suffix, skip_mount_point_check, auto_remove_grep)
     assistant.start()

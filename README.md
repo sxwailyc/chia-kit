@@ -25,6 +25,12 @@ optional arguments:
   --sub-dir-name      sub dir name, default is empty //子目录，默为空,空则不创建子目录
   --scan-interval     scan interval, default is 30 seconds //扫盘间隔
   --move-strategy     move strategy 1. by order 2. avg, default is 2 //移动策略 1. 目录顺序移动, 前面的盘会最先塞满 2. 优先移到剩余空间最大的盘,所有盘会平均分配
+  --suffix              file suffix default is plot  //文件后缀，默认是 plot, 如果是nossd,则加上 --suffix fpt
+  --skip-mount-point-check
+                        skip check the target dir is a mount point, default is  //是否做当前目录是不是挂载点判断
+                        False
+  --auto-remove-grep    auto remove old file grep string  //自动删除旧图过滤字符串，比如要删除plot文件，为 --auto-remove-grep .plot, 如要删除mmx c8文件， 为 --auto-remove-grep -c8-
+ 
 ```
 
 #### 2. plot_cleaner.py  清理一些坏的plot文件，临时文件，以及重复的plot文件的脚本
