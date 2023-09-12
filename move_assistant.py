@@ -271,7 +271,7 @@ class MoveAssistant:
         if file_size <= 0:
             return
         if self.auto_remove_grep:
-            self.auto_remove_old(file_size, self.auto_remove_grep)
+            self.auto_remove_old(file_size, self.auto_remove_grep, self.max_concurrency)
 
     def main(self):
         single_file_size = 0
