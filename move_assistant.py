@@ -252,7 +252,8 @@ class MoveAssistant:
             hdd_dir = hdd_dir_info['hdd_dir']
             if not os.path.exists(hdd_dir):
                 continue
-            if not self.skip_mount_point_check and not is_mountpoint(hdd_dir):
+
+            if os.name != 'nt' and not self.skip_mount_point_check and not is_mountpoint(hdd_dir):
                 log("hdd dir is not mount point:%s" % hdd_dir)
                 continue
             max_file_count = hdd_dir_info['max_file_count']
