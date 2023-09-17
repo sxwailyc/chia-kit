@@ -252,7 +252,6 @@ class MoveAssistant:
             hdd_dir = hdd_dir_info['hdd_dir']
             if not os.path.exists(hdd_dir):
                 continue
-
             if os.name != 'nt' and not self.skip_mount_point_check and not is_mountpoint(hdd_dir):
                 log("hdd dir is not mount point:%s" % hdd_dir)
                 continue
@@ -337,7 +336,7 @@ if __name__ == '__main__':
                         default='plot')
     parser.add_argument("--skip-mount-point-check", action="store_true",
                         help="skip check the target dir is a mount point, default is False",
-                        default=False)
+                        default=True)
 
     parser.add_argument("--auto-remove-grep", metavar="", help="auto remove old file grep string", default="")
 
