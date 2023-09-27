@@ -101,9 +101,8 @@ if __name__ == '__main__':
     path = shutil.which(bin)
 
     if path is None:
-        pass
-        #print(f"{bin} Command not found, please specify the path to Nossd.")
-        #sys.exit(0)
+        print(f"{bin} Command not found, please specify the path to Nossd.")
+        sys.exit(0)
 
     if address is None:
         print(f"{bin} please specify -a param.")
