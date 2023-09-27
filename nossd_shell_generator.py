@@ -59,10 +59,9 @@ class NossdShellGenerator:
 
     def main(self):
         nossd_dirs = batch_get_nossd_dirs(self.folders)
-        print(nossd_dirs)
         no_plotting_s = ' --no-plotting ' if self.no_plotting else ''
         work_name_s = f' -w {self.work_name} ' if self.work_name else ''
-        dir_s = " \\\n".join([f'    {nossd_dir}' for nossd_dir in nossd_dirs]);
+        dir_s = " \\\n".join([f'    -d {nossd_dir}' for nossd_dir in nossd_dirs]);
 
         s = f"""#!/bin/sh
         
