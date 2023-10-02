@@ -79,7 +79,7 @@ def move(source, target, sub_dir_name, current_dirs, current_files, suffix):
         cost_time = time.time() - start
         speed = filesize / cost_time
         log("move %s [file: %s, size: %.2fGB, cost time: %.2fs, speed: %.2fMB/s]" % (
-        print_success('success'), source, size_to_gb(filesize), cost_time, size_to_mb(speed)))
+            print_success('success'), source, size_to_gb(filesize), cost_time, size_to_mb(speed)))
 
     except Exception as e:
         log('move %s:%s' % (print_error('error'), e))
@@ -93,7 +93,30 @@ def get_free(disk):
     return size_to_gb(free)
 
 
-def get_files(_dir, suffix='plot'):
+def convert_n_bytes(n, b):
+    bits = b * 8
+    return (n + 2 ** (bits - 1)) % 2 ** bits - 2 ** (bits - 1)
+
+
+def convert_4_bytes(n):
+    return convert_n_bytes(n, 4)
+
+
+def get_hash_code(s):
+    h = 0
+    n = len(s)
+    for i, c in enumerate(s):
+        h = h + ord(c) * 31 ** (n - 1 - i)
+    return convert_4_bytes(h)
+
+
+def match_bucket(name, bucket):
+    hash_code = get_hash_code(name)
+    b = hash_code % 10
+    return b in bucket
+
+
+def get_files(_dir, suffix='plot', bucket=[]):
     """get all the plot files"""
     if not _dir or not os.path.isdir(_dir):
         return []
@@ -101,6 +124,8 @@ def get_files(_dir, suffix='plot'):
     files = []
     for name in names:
         name = os.path.join(_dir, name)
+        if bucket and not match_bucket(name, bucket):
+            continue
         if os.path.isfile(name) and name.endswith(".%s" % suffix):
             files.append(name)
     return files
@@ -179,7 +204,7 @@ class MoveAssistant:
     AVG = 2
 
     def __init__(self, temp_dir_list, hdd_dir_list, sub_dir_name='', scan_interval=30, max_concurrency=5,
-                 move_strategy=1, suffix='plot', skip_mount_point_check=False, auto_remove_grep=''):
+                 move_strategy=1, suffix='plot', skip_mount_point_check=False, auto_remove_grep='', bucket=[]):
         self.max_concurrency = max_concurrency
         self.temp_dir_list = temp_dir_list
         self.hdd_dir_info_list = parse_hdd_dir(hdd_dir_list)
@@ -189,6 +214,7 @@ class MoveAssistant:
         self.suffix = suffix
         self.skip_mount_point_check = skip_mount_point_check
         self.auto_remove_grep = auto_remove_grep
+        self.bucket = bucket
         self.pool = multiprocessing.Pool(max_concurrency)  # processing pool
         self.current_dirs = multiprocessing.Manager().list()
         self.current_files = multiprocessing.Manager().list()
@@ -284,7 +310,7 @@ class MoveAssistant:
     def main(self):
         single_file_size = 0
         for temp_dir in self.temp_dir_list:
-            files = get_files(temp_dir, self.suffix)
+            files = get_files(temp_dir, self.suffix, self.bucket)
             if not files:
                 log("get 0 files from temp dir:[%s]" % temp_dir)
             now = time.time()
@@ -340,6 +366,9 @@ if __name__ == '__main__':
 
     parser.add_argument("--auto-remove-grep", metavar="", help="auto remove old file grep string", default="")
 
+    parser.add_argument("--bucket", metavar="",
+                        help="split file to 10 bucket, if specify, then only move the specify bucket", default='')
+
     args = parser.parse_args()
 
     temp_dir_list = args.temp_dir_list.split(",")
@@ -351,7 +380,11 @@ if __name__ == '__main__':
     suffix = args.suffix
     skip_mount_point_check = args.skip_mount_point_check
     auto_remove_grep = args.auto_remove_grep
+    bucket_val = args.bucket
+    bucket = []
+    if bucket_val:
+        bucket = [int(v) for v in bucket_val.split(',')]
 
     assistant = MoveAssistant(temp_dir_list, hdd_dir_list, sub_dir_name, scan_interval, max_concurrency,
-                              move_strategy, suffix, skip_mount_point_check, auto_remove_grep)
+                              move_strategy, suffix, skip_mount_point_check, auto_remove_grep, bucket)
     assistant.start()
