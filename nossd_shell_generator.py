@@ -49,23 +49,25 @@ def get_nossd_dirs(base_dir):
 
 class NossdShellGenerator:
 
-    def __init__(self, bin, address, output, work_name, folders, no_plotting):
+    def __init__(self, bin, address, output, work_name, folders, no_plotting, no_rescan):
         self.bin = bin
         self.address = address
         self.output = output
         self.work_name = work_name
         self.folders = folders
         self.no_plotting = no_plotting
+        self.no_rescan = no_rescan
 
     def main(self):
         nossd_dirs = batch_get_nossd_dirs(self.folders)
         no_plotting_s = ' --no-plotting ' if self.no_plotting else ''
+        no_rescan = ' --no-rescan ' if self.no_rescan else ''
         work_name_s = f' -w {self.work_name} ' if self.work_name else ''
         dir_s = " \\\n".join([f'    -d {nossd_dir}' for nossd_dir in nossd_dirs]);
 
         s = f"""#!/bin/sh
         
-{self.bin} -a {self.address}{no_plotting_s}{work_name_s}\\
+{self.bin} -a {self.address}{no_plotting_s}{no_rescan}{work_name_s}\\
 {dir_s}
 """
 
@@ -88,6 +90,7 @@ if __name__ == '__main__':
     parser.add_argument("-a", "--address", metavar="", help="reward xch adress", type=str)
     parser.add_argument("-w", "--work-name", metavar="", help="worker name", default='')
     parser.add_argument("--no-plotting", action='store_true', help="no plotting", default=True)
+    parser.add_argument("--no-rescan", action='store_true', help="no rescan", default=True)
     parser.add_argument("-d", "--dir", nargs='+', action='append', help="fpt file dirs, defautl is [/mnt/]")
 
     args = parser.parse_args()
@@ -96,6 +99,7 @@ if __name__ == '__main__':
     output_dir = args.output_dir
     work_name = args.work_name
     no_plotting = args.no_plotting
+    no_rescan = args.no_rescan
 
     path = shutil.which(bin)
 
@@ -114,5 +118,5 @@ if __name__ == '__main__':
         if not folders:
             folders = ['/mnt/']
 
-    run = NossdShellGenerator(bin, address, output_dir, work_name, folders, no_plotting)
+    run = NossdShellGenerator(bin, address, output_dir, work_name, folders, no_plotting, no_rescan)
     run.main()
