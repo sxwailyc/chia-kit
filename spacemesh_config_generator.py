@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+#https://configs.spacemesh.network/config.mainnet.metrics.json
+
 import argparse
 import ipaddress
 import os
@@ -52,9 +54,9 @@ def generate(output_dir, start_port, directs=[]):
         content = content.replace('${grpc-private-listener}', '%s' % grpc_private_listener)
         content = content.replace('${grpc-json-listener}', '%s' % grpc_json_listener)
 
-        min_peers = 30
-        low_peers = 80
-        high_peers = 80
+        min_peers = 20
+        low_peers = 50
+        high_peers = 50
 
         if directs:
             min_peers = 1

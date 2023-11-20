@@ -7,7 +7,8 @@
       "https://mainnet-poet-1.spacemesh.network",
       "https://mainnet-poet-2.spacemesh.network",
       "https://poet-110.spacemesh.network",
-      "https://poet-111.spacemesh.network"
+      "https://poet-111.spacemesh.network",
+      "https://poet-112.spacemesh.network"
     ]
   },
   "public-metrics": {
@@ -85,8 +86,8 @@
     "min-peers": ${min-peers},
     "low-peers": ${low-peers},
     "high-peers": ${high-peers},
-    "inbound-fraction": 1.1,
-    "outbound-fraction": 1.1
+    "inbound-fraction": 1,
+    "outbound-fraction": 0.5
   },
   "logging": {
       "p2p": "error"
