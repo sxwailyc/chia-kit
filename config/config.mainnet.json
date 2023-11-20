@@ -13,7 +13,7 @@
   },
   "public-metrics": {
     "metrics-url": "https://public-metrics-gateway.spacemesh.network",
-    "metrics-push-period": "10m",
+    "metrics-push-period": "30m",
     "metrics-push-user": "spacemesh",
     "metrics-push-pass": "Rj4puYaD2p7UXTKx6YgCfdUEJA2tOz1c",
     "metrics-push-header": {
