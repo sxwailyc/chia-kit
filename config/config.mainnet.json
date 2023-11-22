@@ -90,8 +90,9 @@
     "outbound-fraction": 0.5
   },
   "logging": {
-      "p2p": "error"
-  },
+      "p2p": "error",
+      "grpc": "error"
+},
   "smeshing": {
     "smeshing-proving-opts": {
       "smeshing-opts-proving-nonces": 288,
