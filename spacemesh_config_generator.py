@@ -54,9 +54,9 @@ def generate(output_dir, start_port, directs=[]):
         content = content.replace('${grpc-private-listener}', '%s' % grpc_private_listener)
         content = content.replace('${grpc-json-listener}', '%s' % grpc_json_listener)
 
-        min_peers = 20
-        low_peers = 50
-        high_peers = 50
+        min_peers = 60
+        low_peers = 120
+        high_peers = 120
 
         if directs:
             min_peers = 1
