@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import fcntl
 import sys
 import socket
 import json
@@ -30,9 +29,13 @@ def to_int(s):
         return 0
 
 
+def is_win():
+    return sys.platform.startswith("win32")
+
+
 def call_grpc(port, service, data={}):
     """call grpc"""
-    cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "grpcurl")
+    cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "grpcurl.exe" if is_win() else "grpcurl")
     result = subprocess.check_output([cmd, '--plaintext', '-d', json.dumps(data), f'127.0.0.1:{port}', service])
 
     dict_result = json.loads(result)
@@ -41,7 +44,7 @@ def call_grpc(port, service, data={}):
 
 def call_grpc_stream(port, service, pgids, data={}):
     """call grpc"""
-    cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "grpcurl")
+    cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "grpcurl.exe" if is_win() else "grpcurl")
     ON_POSIX = 'posix' in sys.builtin_module_names
     p = subprocess.Popen([cmd, '--plaintext', '-d', json.dumps(data), f'127.0.0.1:{port}', service],
                          stdout=subprocess.PIPE, close_fds=ON_POSIX)
@@ -66,7 +69,8 @@ def call_grpc_stream(port, service, pgids, data={}):
             line = line.decode("utf8")
             result += line
 
-    pgids.add(os.getpgid(p.pid))
+    if not is_win():
+        pgids.add(os.getpgid(p.pid))
 
     return result
 
@@ -87,10 +91,6 @@ def split_line(line):
         if data:
             ndatas.append(data)
     return ndatas
-
-
-def is_root():
-    return os.getuid() == 0
 
 
 def report(secret, machine_info, node_infos):
@@ -204,30 +204,12 @@ def main(secret, host_name):
 
     report(secret, machine_info, node_infos)
 
-    for pgid in pgids:
-        os.killpg(pgid, signal.SIGTERM)
-
-def acquire_port_lock(port):
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind(('localhost', port))
-        sock.listen(1)
-        fcntl.flock(sock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        return sock
-    except IOError:
-        print(f"Another process is already listening on port {port}. Exiting.")
-        exit(1)
-
-
-def release_port_lock(sock):
-    fcntl.flock(sock.fileno(), fcntl.LOCK_UN)
-    sock.close()
+    if not is_win():
+        for pgid in pgids:
+            os.killpg(pgid, signal.SIGTERM)
 
 
 if __name__ == '__main__':
-    if not is_root():
-        print("must run by root")
-        sys.exit(0)
 
     parser = argparse.ArgumentParser(description="""
        This script is for monitor the harvester server and report to the server.
@@ -236,19 +218,25 @@ if __name__ == '__main__':
     parser.add_argument("--secret", metavar="", help="secret, use to post to server ")
     parser.add_argument("--lock-port", metavar="", type=int, help="lock port, default is 9000",
                         default=9000)
+    parser.add_argument("-i", "--interval", metavar="", type=int, help="interval",
+                        default=0)
 
     args = parser.parse_args()
     secret = args.secret
     port = args.lock_port
+    interval = args.interval
     if not secret:
         print("please input secret with --secret")
         sys.exit(0)
-    host_name = args.host_name
-    sock = None
-    try:
-        # sock = acquire_port_lock(port)
-        print('lock success')
+
+    if interval > 0:
+        while True:
+            try:
+                host_name = args.host_name
+                main(secret=secret, host_name=host_name)
+            except:
+                pass
+            time.sleep(interval)
+    else:
+        host_name = args.host_name
         main(secret=secret, host_name=host_name)
-    finally:
-        if sock:
-            release_port_lock(sock)
