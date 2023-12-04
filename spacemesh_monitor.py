@@ -69,9 +69,13 @@ def call_grpc_stream(port, service, pgids, data={}):
             line = line.decode("utf8")
             result += line
 
+<<<<<<< HEAD
     if is_win():
         os.kill(p.pid, signal.SIGTERM)
     else:
+=======
+    if not is_win():
+>>>>>>> 80682d0fd9d76a7c5f53f4c0c392931ccabf8ec9
         pgids.add(os.getpgid(p.pid))
 
     return result
