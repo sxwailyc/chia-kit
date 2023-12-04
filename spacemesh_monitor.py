@@ -1,0 +1,244 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import sys
+import socket
+import json
+import time
+
+import signal
+import requests
+import subprocess
+from threading import Thread
+from queue import Queue, Empty
+
+import argparse
+import os
+from datetime import datetime
+
+
+def log(msg):
+    s = "[%s]%s" % (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), msg)
+    print(s)
+
+
+def to_int(s):
+    try:
+        return int(s)
+    except:
+        return 0
+
+
+def is_win():
+    return sys.platform.startswith("win32")
+
+
+def call_grpc(port, service, data={}):
+    """call grpc"""
+    cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "grpcurl.exe" if is_win() else "grpcurl")
+    result = subprocess.check_output([cmd, '--plaintext', '-d', json.dumps(data), f'127.0.0.1:{port}', service])
+
+    dict_result = json.loads(result)
+    return dict_result
+
+
+def call_grpc_stream(port, service, pgids, data={}):
+    """call grpc"""
+    cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "grpcurl.exe" if is_win() else "grpcurl")
+    ON_POSIX = 'posix' in sys.builtin_module_names
+    p = subprocess.Popen([cmd, '--plaintext', '-d', json.dumps(data), f'127.0.0.1:{port}', service],
+                         stdout=subprocess.PIPE, close_fds=ON_POSIX)
+
+    def enqueue_output(out, queue):
+        for line in iter(out.readline, b''):
+            queue.put(line)
+        out.close()
+
+    q = Queue()
+    t = Thread(target=enqueue_output, args=(p.stdout, q))
+    t.daemon = True  # thread dies with the program
+    t.start()
+
+    result = ""
+    while True:
+        try:
+            line = q.get(timeout=1)
+        except Empty:
+            break
+        else:  # got line
+            line = line.decode("utf8")
+            result += line
+
+    if is_win():
+        os.kill(p.pid, signal.SIGTERM)
+    else:
+        pgids.add(os.getpgid(p.pid))
+
+    return result
+
+
+def get_local_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
+    except:
+        return "127.0.0.1"
+
+
+def split_line(line):
+    datas = line.split(" ")
+    ndatas = []
+    for data in datas:
+        if data:
+            ndatas.append(data)
+    return ndatas
+
+
+def report(secret, machine_info, node_infos):
+    data = json.dumps({
+        "secret": secret,
+        "machine": machine_info,
+        "nodes": node_infos
+    })
+    try_times = 0
+    while try_times < 3:
+        try:
+            response = requests.post("https://api.mingyan.com/api/spacemesh/monitor", data)
+            break
+        except:
+            time.sleep(10)
+        try_times += 1
+
+
+def get_nodes(secret, host_name):
+    response = requests.get(f"https://api.mingyan.com/api/spacemesh/nodes?secret={secret}&hostname={host_name}")
+    data = json.loads(response.text)
+    return data["data"]["nodes"]
+
+
+def get_node_info(public_port, private_port, pgids):
+    try:
+        node_result = call_grpc(public_port, "spacemesh.v1.NodeService.Status")
+        connected_peers = node_result["status"].get("connectedPeers", 0)
+        is_synced = node_result["status"].get("isSynced", False)
+        synced_layer = node_result["status"]["syncedLayer"]["number"]
+        top_layer = node_result["status"]["topLayer"]["number"]
+        verified_layer = node_result["status"]["verifiedLayer"]["number"]
+
+        version_result = call_grpc(public_port, "spacemesh.v1.NodeService.Version")
+        version = version_result["versionString"]["value"]
+
+        post_result = call_grpc(private_port, "spacemesh.v1.SmesherService.PostSetupStatus")
+        post_state = post_result["status"]["state"]
+        num_labels_written = post_result["status"].get("numLabelsWritten", 0)
+        opts = post_result["status"].get("opts")
+        if opts:
+            data_dir = opts["dataDir"]
+            num_units = opts["numUnits"]
+            max_filesize = opts["maxFileSize"]
+        else:
+            data_dir = ""
+            num_units = 0
+            max_filesize = 0
+
+        smeshing_result = call_grpc(private_port, "spacemesh.v1.SmesherService.IsSmeshing")
+        is_smeshing = smeshing_result.get("isSmeshing", 0)
+
+        events = call_grpc_stream(private_port, "spacemesh.v1.AdminService.EventsStream", pgids)
+
+        node_info = {
+            'connected_peers': connected_peers,
+            'is_synced': is_synced,
+            'synced_layer': synced_layer,
+            'top_layer': top_layer,
+            'verified_layer': verified_layer,
+            'post_state': post_state,
+            'num_labels_written': num_labels_written,
+            'data_dir': data_dir,
+            'num_units': num_units,
+            'max_filesize': max_filesize,
+            'is_smeshing': is_smeshing,
+            'version': version,
+            'events': events
+        }
+        return True, node_info
+    except Exception as e:
+        print(f"error:{e}")
+    return False, {}
+
+
+def main(secret, host_name):
+    if not host_name:
+        host_name = socket.gethostname()
+        print(host_name)
+
+    nodes = get_nodes(secret, host_name)
+    node_infos = []
+    all_size = 0
+    finish_size = 0
+    node_count = 0
+    pgids = set()
+    for node in nodes:
+        success, node_info = get_node_info(node['publicPort'], node['privatePort'], pgids)
+        node_count += 1
+        if success:
+            num_units = node_info["num_units"]
+            state = node_info['post_state']
+            size = num_units * 64 * 1024 * 1024 * 1024
+            all_size += size
+            if state == 'STATE_COMPLETE':
+                finish_size += size
+
+            node_info['node_id'] = node['id']
+            node_infos.append(node_info)
+            print(f"node info:{node_info}")
+        else:
+            print(f"get node info error: {node['publicPort']}")
+
+    machine_info = {
+        'host_name': host_name,
+        'ip': get_local_ip(),
+        'all_size': all_size,
+        'finish_size': finish_size,
+        'node_count': node_count
+    }
+
+    report(secret, machine_info, node_infos)
+
+    if not is_win():
+        for pgid in pgids:
+            os.killpg(pgid, signal.SIGTERM)
+
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description="""
+       This script is for monitor the harvester server and report to the server.
+    """)
+    parser.add_argument("--host-name", metavar="", help="the host name, default is current host name", default='')
+    parser.add_argument("--secret", metavar="", help="secret, use to post to server ")
+    parser.add_argument("--lock-port", metavar="", type=int, help="lock port, default is 9000",
+                        default=9000)
+    parser.add_argument("-i", "--interval", metavar="", type=int, help="interval",
+                        default=0)
+
+    args = parser.parse_args()
+    secret = args.secret
+    port = args.lock_port
+    interval = args.interval
+    if not secret:
+        print("please input secret with --secret")
+        sys.exit(0)
+
+    if interval > 0:
+        while True:
+            try:
+                host_name = args.host_name
+                main(secret=secret, host_name=host_name)
+            except:
+                pass
+            time.sleep(interval)
+    else:
+        host_name = args.host_name
+        main(secret=secret, host_name=host_name)
