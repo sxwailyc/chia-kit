@@ -170,10 +170,10 @@ def report(secret, machine_info, disk_infos):
     while try_times < 3:
         try:
             response = requests.post("https://api.mingyan.com/api/chia/monitor", data)
-            print(response.text)
+            log(response.text)
             break
         except Exception as e:
-            print(f'report error {e}')
+            log(f'report error {e}')
             time.sleep(10)
         try_times += 1
 
@@ -181,7 +181,7 @@ def report(secret, machine_info, disk_infos):
 def main(secret, host_name, print_info):
     if not host_name:
         host_name = socket.gethostname()
-        print(host_name)
+        log(host_name)
 
     usage_infos = get_usage_infos()
     disk_count = 0
@@ -233,7 +233,7 @@ def acquire_port_lock(port):
         fcntl.flock(sock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         return sock
     except IOError:
-        print(f"Another process is already listening on port {port}. Exiting.")
+        log(f"Another process is already listening on port {port}. Exiting.")
         exit(1)
 
 
@@ -270,8 +270,10 @@ if __name__ == '__main__':
     sock = None
     try:
         sock = acquire_port_lock(port)
-        print('lock success')
+        log('lock success')
         main(secret=secret, host_name=host_name, print_info=print_info)
+        log("start to exit")
+        sys.exit(0)
     finally:
         if sock:
             release_port_lock(sock)
