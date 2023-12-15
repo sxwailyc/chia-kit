@@ -269,6 +269,7 @@ if __name__ == '__main__':
 
     sock = None
     try:
+        log('start to lock')
         sock = acquire_port_lock(port)
         log('lock success')
         main(secret=secret, host_name=host_name, print_info=print_info)
