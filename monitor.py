@@ -243,6 +243,9 @@ def release_port_lock(sock):
 
 
 if __name__ == '__main__':
+
+    log("monitor start")
+
     if not is_root():
         print("must run by root")
         sys.exit(0)
@@ -264,6 +267,9 @@ if __name__ == '__main__':
     if not secret:
         print("please input secret with --secret")
         sys.exit(0)
+
+    log(f'secret {secret}')
+
     host_name = args.host_name
     print_info = args.print
 
