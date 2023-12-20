@@ -19,6 +19,7 @@ from datetime import datetime
 def log(msg):
     s = "[%s]%s" % (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), msg)
     print(s)
+    sys.stdout.flush()
 
 
 def to_int(s):
