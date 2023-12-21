@@ -170,6 +170,7 @@ def report(secret, machine_info, disk_infos):
     try_times = 0
     while try_times < 3:
         try:
+            log(f"start to report, try times {try_times}")
             response = requests.post("https://api.mingyan.com/api/chia/monitor", data)
             log(response.text)
             break
