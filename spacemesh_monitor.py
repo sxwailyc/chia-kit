@@ -104,7 +104,7 @@ def report(secret, machine_info, node_infos):
     try_times = 0
     while try_times < 3:
         try:
-            response = requests.post("https://api.mingyan.com/api/spacemesh/monitor", data)
+            response = requests.post("https://api.mingyan.com/api/spacemesh/monitor", data, timeout=10)
             break
         except:
             time.sleep(10)
@@ -112,7 +112,7 @@ def report(secret, machine_info, node_infos):
 
 
 def get_nodes(secret, host_name):
-    response = requests.get(f"https://api.mingyan.com/api/spacemesh/nodes?secret={secret}&hostname={host_name}")
+    response = requests.get(f"https://api.mingyan.com/api/spacemesh/nodes?secret={secret}&hostname={host_name}", timeout=10)
     data = json.loads(response.text)
     return data["data"]["nodes"]
 
