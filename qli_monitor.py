@@ -56,7 +56,7 @@ def post(url, data):
     while try_times < 3:
         try:
             response = requests.post(url, data, timeout=10)
-            print(response.text)
+            log(response.text)
             return response.text
         except:
             time.sleep(10)
@@ -69,7 +69,7 @@ def get(url):
         try:
             response = requests.get(url, timeout=10)
             text = response.text
-            print(text)
+            log(text)
             return text
         except:
             time.sleep(10)
@@ -95,9 +95,7 @@ def end(secret, host_name, state):
         "state": state,
         "ip": get_local_ip()
     })
-    text = post("https://api.mingyan.com/api/qli/monitor", data)
-    print(text)
-
+    post("https://api.mingyan.com/api/qli/monitor", data)
 
 
 def rmfile(name):
@@ -142,6 +140,7 @@ def upgrade(url):
 
 def run_supervisor_cmd(cmd):
     """run supervisor cmd"""
+    log(f"start to run supervisorctl {cmd} qli")
     subprocess.call(['supervisorctl', cmd, 'qli'])
 
 
@@ -169,7 +168,6 @@ def execute(command):
 def get_state():
     """get state"""
     result = subprocess.run(['supervisorctl', 'status', 'qli'], capture_output=True, shell=False, encoding='UTF-8')
-    print(result.returncode)
     text = result.stdout
     state = ""
     if result:
