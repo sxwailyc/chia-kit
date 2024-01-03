@@ -53,6 +53,7 @@ def post(url, data):
     while try_times < 3:
         try:
             response = requests.post(url, data, timeout=10)
+            print(response.text)
             return response.text
         except:
             time.sleep(10)
