@@ -125,7 +125,7 @@ def upgrade(url):
     log(f"download {url} to {DOWNLOAD_DIR}qli.tar.gz")
     os.system(f"wget -O {DOWNLOAD_DIR}qli.tar.gz {url}")
     log(f"unzip file {DOWNLOAD_DIR}qli.tar.gz")
-    os.system(f"tar zxvf {DOWNLOAD_DIR}qli.tar.gz {DOWNLOAD_DIR}")
+    os.system(f"tar zxvf {DOWNLOAD_DIR}qli.tar.gz -C {DOWNLOAD_DIR}")
     rmfile("/data/app/qli/qli-Client")
     rmfile("/data/app/qli/qli-runner")
     rmfile("/data/app/qli/qli-runner.lock")
