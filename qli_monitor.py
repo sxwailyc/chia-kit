@@ -64,18 +64,16 @@ def get(url):
     while try_times < 3:
         try:
             response = requests.get(url, timeout=10)
-            return response.text
+            text = response.text
+            print(text)
+            return text
         except:
             time.sleep(10)
         try_times += 1
 
 
 def start(secret, host_name, ip):
-    data = json.dumps({
-        "secret": secret,
-        "host_name": host_name
-    })
-    text = get("https://api.mingyan.com/api/qli/getCommand", data)
+    text = get(f"https://api.mingyan.com/api/qli/getCommand?secret={secret}&hostname={host_name}&ip={ip}")
     data = json.loads(text)
     command = data["data"]["command"]
     param = data["data"]["param"]
