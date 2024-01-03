@@ -94,11 +94,11 @@ def end(secret, host_name, status):
     })
     text = post("https://api.mingyan.com/api/qli/monitor", data)
     data = json.loads(text)
-    command = data["data"]["command"]
+    command = data["data"]["cmd"]
     param = data["data"]["param"]
     if command:
         return {
-            'command': command,
+            'cmd': command,
             'param': param
         }
 
