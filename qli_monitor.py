@@ -101,7 +101,7 @@ def upgrade(url):
 
 def run_supervisor_cmd(cmd):
     """run supervisor cmd"""
-    subprocess.check_output(['supervisorctl', cmd, 'qli'])
+    subprocess.call(['supervisorctl', cmd, 'qli'])
 
 
 def execute(command):
@@ -117,7 +117,7 @@ def execute(command):
 
 def get_status():
     """get status"""
-    result = subprocess.check_output(['supervisorctl', 'status', 'qli'])
+    result = subprocess.call(['supervisorctl', 'status', 'qli'])
     result = result.decode("utf8")
     print(result)
     status = ""
