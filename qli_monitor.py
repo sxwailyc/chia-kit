@@ -127,7 +127,7 @@ def execute(command):
 
 def get_state():
     """get state"""
-    result = subprocess.run(['supervisorctl', 'status', 'qli'], capture_output=True, shell=True, encoding='UTF-8')
+    result = subprocess.run(['supervisorctl', 'status', 'qli'], capture_output=True, shell=False, encoding='UTF-8')
     print(result.returncode)
     text = result.stdout
     status = ""
