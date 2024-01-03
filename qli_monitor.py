@@ -85,11 +85,11 @@ def start(secret, host_name):
         }
 
 
-def end(secret, host_name, status):
+def end(secret, host_name, state):
     data = json.dumps({
         "secret": secret,
         "host_name": host_name,
-        "status": status,
+        "state": state,
         "ip": get_local_ip()
     })
     text = post("https://api.mingyan.com/api/qli/monitor", data)
@@ -109,14 +109,24 @@ def execute(command):
     param = command['param']
     log(f'start to run cmd {cmd}')
     if cmd in ['stop', 'start', 'restart']:
+        current_state = get_state()
+        if cmd == 'stop':
+            if current_state == 'STOPPED':
+                return
+        elif cmd == 'start':
+            if current_state == 'RUNNING':
+                return
+        elif cmd == 'restart':
+            if current_state == 'STOPPED':
+                cmd = 'start'
         run_supervisor_cmd(cmd)
     elif cmd == 'upgrade':
         url = param['url']
         upgrade(url)
 
 
-def get_status():
-    """get status"""
+def get_state():
+    """get state"""
     result = subprocess.call(['supervisorctl', 'status', 'qli'])
     result = result.decode("utf8")
     print(result)
@@ -137,9 +147,9 @@ def main(secret, host_name):
     if command:
         execute(command)
 
-    status = get_status()
+    state = get_state()
 
-    end(secret, host_name, status)
+    end(secret, host_name, state)
 
 
 if __name__ == '__main__':
