@@ -125,6 +125,7 @@ def execute(command):
 def get_status():
     """get status"""
     result = subprocess.check_output(['supervisorctl', 'status', 'qli'])
+    result = result.decode("utf8")
     print(result)
     status = ""
     if result:
@@ -138,7 +139,7 @@ def main(secret, host_name):
         host_name = socket.gethostname()
         print(host_name)
 
-    command = start(secret, host_name, get_local_ip())
+    command = start(secret, host_name)
 
     if command:
         execute(command)
@@ -170,5 +171,6 @@ if __name__ == '__main__':
             host_name = args.host_name
             main(secret=secret, host_name=host_name)
         except:
+            raise
             pass
         time.sleep(interval)
