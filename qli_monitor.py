@@ -59,12 +59,23 @@ def post(url, data):
         try_times += 1
 
 
+def get(url):
+    try_times = 0
+    while try_times < 3:
+        try:
+            response = requests.get(url, timeout=10)
+            return response.text
+        except:
+            time.sleep(10)
+        try_times += 1
+
+
 def start(secret, host_name, ip):
     data = json.dumps({
         "secret": secret,
         "host_name": host_name
     })
-    text = post("https://api.mingyan.com/api/qli/getCommand", data)
+    text = get("https://api.mingyan.com/api/qli/getCommand", data)
     data = json.loads(text)
     command = data["data"]["command"]
     param = data["data"]["param"]
@@ -73,6 +84,7 @@ def start(secret, host_name, ip):
             'command': command,
             'param': param
         }
+
 
 def end(secret, host_name, status):
     data = json.dumps({
@@ -90,6 +102,7 @@ def end(secret, host_name, status):
             'param': param
         }
 
+
 def upgrade(url):
     pass
 
@@ -102,6 +115,7 @@ def run_supervisor_cmd(cmd):
 def execute(command):
     cmd = command['cmd']
     param = command['param']
+    log(f'start to run cmd {cmd}')
     if cmd in ['stop', 'start', 'restart']:
         run_supervisor_cmd(cmd)
     elif cmd == 'upgrade':
