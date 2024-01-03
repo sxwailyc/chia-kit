@@ -116,7 +116,7 @@ def upgrade(url):
         'param': {}
     })
 
-    if os.path.exists(DOWNLOAD_DIR):
+    if not os.path.exists(DOWNLOAD_DIR):
         log(f"create dir {DOWNLOAD_DIR}")
         os.makedirs(DOWNLOAD_DIR)
 
