@@ -80,7 +80,7 @@ def start(secret, host_name):
     param = data["data"]["param"]
     if command:
         return {
-            'command': command,
+            'cmd': command,
             'param': param
         }
 
