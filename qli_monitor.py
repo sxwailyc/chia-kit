@@ -130,13 +130,12 @@ def get_state():
     result = subprocess.run(['supervisorctl', 'status', 'qli'], capture_output=True, shell=False, encoding='UTF-8')
     print(result.returncode)
     text = result.stdout
-    status = ""
+    state = ""
     if result:
         data = split_line(text)
-        print(data)
         state = data[1]
         log(f"state:{state}")
-    return status
+    return state
 
 
 def main(secret, host_name):
