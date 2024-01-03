@@ -72,8 +72,8 @@ def get(url):
         try_times += 1
 
 
-def start(secret, host_name, ip):
-    text = get(f"https://api.mingyan.com/api/qli/getCommand?secret={secret}&hostname={host_name}&ip={ip}")
+def start(secret, host_name):
+    text = get(f"https://api.mingyan.com/api/qli/getCommand?secret={secret}&hostname={host_name}")
     data = json.loads(text)
     command = data["data"]["command"]
     param = data["data"]["param"]
@@ -88,7 +88,8 @@ def end(secret, host_name, status):
     data = json.dumps({
         "secret": secret,
         "host_name": host_name,
-        "status": status
+        "status": status,
+        "ip": get_local_ip()
     })
     text = post("https://api.mingyan.com/api/qli/monitor", data)
     data = json.loads(text)
