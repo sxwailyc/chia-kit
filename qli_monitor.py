@@ -127,7 +127,7 @@ def execute(command):
 
 def get_state():
     """get state"""
-    result = subprocess.call(['supervisorctl', 'status', 'qli'])
+    result = subprocess.getoutput(['supervisorctl', 'status', 'qli'])
     result = result.decode("utf8")
     print(result)
     status = ""
