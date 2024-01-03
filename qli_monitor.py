@@ -14,6 +14,9 @@ import os
 from datetime import datetime
 
 
+DOWNLOAD_DIR = "/data/app/qli-app/"
+
+
 def log(msg):
     s = "[%s]%s" % (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), msg)
     print(s)
@@ -95,8 +98,46 @@ def end(secret, host_name, state):
     text = post("https://api.mingyan.com/api/qli/monitor", data)
     print(text)
 
+
+
+def rmfile(name):
+    log(f"rm file {name}")
+    os.system(f"rm -f {name}")
+
+
+def rmdir(name):
+    log(f"rm dir {name}")
+    os.system(f"rm -rf {name}")
+
+
 def upgrade(url):
-    pass
+    execute({
+        'cmd': 'stop',
+        'param': {}
+    })
+
+    if os.path.exists(DOWNLOAD_DIR):
+        log(f"create dir {DOWNLOAD_DIR}")
+        os.makedirs(DOWNLOAD_DIR)
+
+    log("rm -f {DOWNLOAD_DIR}*")
+    os.system(f"rm -f {DOWNLOAD_DIR}*")
+    log(f"download {url} to {DOWNLOAD_DIR}qli.tar.gz")
+    os.system(f"wget -O {DOWNLOAD_DIR}qli.tar.gz {url}")
+    log(f"unzip file {DOWNLOAD_DIR}qli.tar.gz")
+    os.system(f"tar zxvf {DOWNLOAD_DIR}qli.tar.gz {DOWNLOAD_DIR}")
+    rmfile("/data/app/qli/qli-Client")
+    rmfile("/data/app/qli/qli-runner")
+    rmfile("/data/app/qli/qli-runner.lock")
+    rmdir("/data/app/qli/tmp")
+    rmdir("/data/app/qli/log")
+    log(f"cp {DOWNLOAD_DIR}/qli-Client to /data/app/qli/")
+    os.system(f"cp {DOWNLOAD_DIR}/qli-Client /data/app/qli/")
+
+    execute({
+        'cmd': 'start',
+        'param': {}
+    })
 
 
 def run_supervisor_cmd(cmd):
