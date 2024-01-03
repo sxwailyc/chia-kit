@@ -76,7 +76,7 @@ def get(url):
 def start(secret, host_name):
     text = get(f"https://api.mingyan.com/api/qli/getCommand?secret={secret}&hostname={host_name}")
     data = json.loads(text)
-    command = data["data"]["command"]
+    command = data["data"]["cmd"]
     param = data["data"]["param"]
     if command:
         return {
@@ -93,15 +93,7 @@ def end(secret, host_name, status):
         "ip": get_local_ip()
     })
     text = post("https://api.mingyan.com/api/qli/monitor", data)
-    data = json.loads(text)
-    command = data["data"]["cmd"]
-    param = data["data"]["param"]
-    if command:
-        return {
-            'cmd': command,
-            'param': param
-        }
-
+    print(text)
 
 def upgrade(url):
     pass
