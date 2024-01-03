@@ -133,7 +133,9 @@ def get_state():
     status = ""
     if result:
         data = split_line(text)
-        status = data[1]
+        print(data)
+        state = data[1]
+        log(f"state:{state}")
     return status
 
 
