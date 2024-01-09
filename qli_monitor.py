@@ -53,7 +53,7 @@ def split_line(line):
 
 def post(url, data):
     try_times = 0
-    while try_times < 3:
+    while try_times < 30:
         try:
             response = requests.post(url, data, timeout=10)
             log(response.text)
@@ -65,7 +65,7 @@ def post(url, data):
 
 def get(url):
     try_times = 0
-    while try_times < 3:
+    while try_times < 30:
         try:
             response = requests.get(url, timeout=10)
             text = response.text
@@ -118,7 +118,7 @@ def upgrade(url):
         log(f"create dir {DOWNLOAD_DIR}")
         os.makedirs(DOWNLOAD_DIR)
 
-    log("rm -f {DOWNLOAD_DIR}*")
+    log(f"rm -f {DOWNLOAD_DIR}*")
     os.system(f"rm -f {DOWNLOAD_DIR}*")
     log(f"download {url} to {DOWNLOAD_DIR}qli.tar.gz")
     os.system(f"wget -O {DOWNLOAD_DIR}qli.tar.gz {url}")
