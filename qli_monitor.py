@@ -144,6 +144,11 @@ def run_supervisor_cmd(cmd):
     subprocess.call(['supervisorctl', cmd, 'qli'])
 
 
+def run_script(script):
+    """run script"""
+    log(f"start to run script {script} ")
+    os.system(script)
+
 def execute(command):
     cmd = command['cmd']
     param = command['param']
@@ -163,6 +168,9 @@ def execute(command):
     elif cmd == 'upgrade':
         url = param['url']
         upgrade(url)
+    elif cmd == 'script':
+        script = param['script']
+        run_script(script)
 
 
 def get_state():
