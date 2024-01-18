@@ -111,7 +111,7 @@ def rmdir(name):
 
 def gitpull():
     os.system("export https_proxy=http://v2ray.mingyan.com:20171")
-    os.chdir('/data/shell/chit-kit')
+    os.chdir('/data/shell/chia-kit')
     os.system('git pull')
     os._exit(0)
 
