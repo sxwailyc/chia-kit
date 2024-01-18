@@ -214,7 +214,7 @@ def get_state(client):
     if result:
         data = split_line(text)
         state = data[1]
-        log(f"state:{state}")
+        log(f"{client}, state:{state}")
     return state
 
 
