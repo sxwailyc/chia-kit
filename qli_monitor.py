@@ -169,7 +169,7 @@ def upgrade(url):
 def run_supervisor_cmd(cmd, client):
     """run supervisor cmd"""
     log(f"start to run supervisorctl {cmd} {client}")
-    subprocess.call(['supervisorctl', cmd, {client}])
+    subprocess.call(['supervisorctl', cmd, client])
 
 
 def run_script(script):
