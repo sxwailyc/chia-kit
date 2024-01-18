@@ -237,6 +237,7 @@ if __name__ == '__main__':
             host_name = args.host_name
             main(secret=secret, host_name=host_name)
         except:
+            #raise
             pass
         time.sleep(interval)
 
