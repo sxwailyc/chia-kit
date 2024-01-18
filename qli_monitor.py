@@ -110,6 +110,7 @@ def rmdir(name):
 
 
 def gitpull():
+    os.system("export https_proxy=http://v2ray.mingyan.com:20171")
     os.chdir('/data/shekk/chit-kit')
     os.system('git pull')
     sys.exit(0)
@@ -238,3 +239,4 @@ if __name__ == '__main__':
         except:
             pass
         time.sleep(interval)
+
