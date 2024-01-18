@@ -103,18 +103,18 @@ def memory_info():
 
 
 def end(secret, host_name, state):
-    memory_total, memory_usage = memory_info()
-    cpu_count, cpu_usage_rate, freq_max, freq_current = cpu_info()
+    memory_total, memory_used = memory_info()
+    cpu_count, cpu_percent, cpu_freq_max, cpu_freq_current = cpu_info()
     data = json.dumps({
         "secret": secret,
         "host_name": host_name,
         "state": state,
-        "cpu_usage_rate": cpu_usage_rate,
+        "cpu_percent": cpu_percent,
         "cpu_count": cpu_count,
-        "freq_max": freq_max,
-        "freq_current": freq_current,
+        "cpu_freq_max": cpu_freq_max,
+        "cpu_freq_current": cpu_freq_current,
         "memory_total": memory_total,
-        "memory_usage": memory_usage,
+        "memory_used": memory_used,
         "ip": get_local_ip()
     })
     post("https://api.mingyan.com/api/qli/monitor", data)
