@@ -91,7 +91,7 @@ def start(secret, host_name):
 
 
 def cpu_info():
-    cpu_count = psutil.cpu_count
+    cpu_count = psutil.cpu_count()
     percent = psutil.cpu_percent()
     freq = psutil.cpu_freq()
     return cpu_count, percent, freq.max, freq.current
