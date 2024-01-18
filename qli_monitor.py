@@ -183,7 +183,8 @@ def execute(command):
     param = command['param']
     log(f'start to run cmd {cmd}')
     if cmd in ['stop', 'start', 'restart']:
-        current_state = get_state(param)
+        client = param['client']
+        current_state = get_state(client)
         if cmd == 'stop':
             if current_state == 'STOPPED':
                 return
@@ -193,7 +194,7 @@ def execute(command):
         elif cmd == 'restart':
             if current_state == 'STOPPED':
                 cmd = 'start'
-        run_supervisor_cmd(cmd, param['client'])
+        run_supervisor_cmd(cmd, client)
     elif cmd == 'upgrade':
         url = param['url']
         upgrade(url)
