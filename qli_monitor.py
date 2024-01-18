@@ -5,6 +5,7 @@ import sys
 import socket
 import json
 import time
+import psutil
 
 import requests
 import subprocess
@@ -89,11 +90,31 @@ def start(secret, host_name):
         }
 
 
+def cpu_info():
+    cpu_count = psutil.cpu_count
+    percent = psutil.cpu_percent()
+    freq = psutil.cpu_freq()
+    return cpu_count, percent, freq.max, freq.current
+
+
+def memory_info():
+    info = psutil.virtual_memory()
+    return info.total, info.used
+
+
 def end(secret, host_name, state):
+    memory_total, memory_usage = memory_info()
+    cpu_count, cpu_usage_rate, freq_max, freq_current = cpu_info()
     data = json.dumps({
         "secret": secret,
         "host_name": host_name,
         "state": state,
+        "cpu_usage_rate": cpu_usage_rate,
+        "cpu_count": cpu_count,
+        "freq_max": freq_max,
+        "freq_current": freq_current,
+        "memory_total": memory_total,
+        "memory_usage": memory_usage,
         "ip": get_local_ip()
     })
     post("https://api.mingyan.com/api/qli/monitor", data)
@@ -113,7 +134,6 @@ def gitpull():
     os.system("export https_proxy=http://v2ray.mingyan.com:20171")
     os.chdir('/data/shell/chia-kit')
     os.system('git pull')
-    sys.exit(0)
 
 
 def upgrade(url):
@@ -211,6 +231,9 @@ def main(secret, host_name):
         state[client] = get_state(client)
 
     end(secret, host_name, state)
+
+    if command['cmd'] == 'gitpull':
+        sys.exit(0)
 
 
 if __name__ == '__main__':
