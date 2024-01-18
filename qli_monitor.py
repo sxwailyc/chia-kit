@@ -113,7 +113,7 @@ def gitpull():
     os.system("export https_proxy=http://v2ray.mingyan.com:20171")
     os.chdir('/data/shekk/chit-kit')
     os.system('git pull')
-    os._exit()
+    os._exit(0)
 
 
 def upgrade(url):
