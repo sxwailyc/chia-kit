@@ -232,7 +232,7 @@ def main(secret, host_name):
 
     end(secret, host_name, state)
 
-    if command['cmd'] == 'gitpull':
+    if command and command['cmd'] == 'gitpull':
         sys.exit(0)
 
 
