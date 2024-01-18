@@ -13,8 +13,9 @@ import argparse
 import os
 from datetime import datetime
 
-
 DOWNLOAD_DIR = "/data/app/qli-app/"
+
+CLIENTS = ['qli', 'bitnet', 'xcb']
 
 
 def log(msg):
@@ -108,6 +109,12 @@ def rmdir(name):
     os.system(f"rm -rf {name}")
 
 
+def gitpull():
+    os.chdir('/data/shekk/chit-kit')
+    os.system('git pull')
+    sys.exit(0)
+
+
 def upgrade(url):
     execute({
         'cmd': 'stop',
@@ -138,10 +145,10 @@ def upgrade(url):
     })
 
 
-def run_supervisor_cmd(cmd):
+def run_supervisor_cmd(cmd, client):
     """run supervisor cmd"""
-    log(f"start to run supervisorctl {cmd} qli")
-    subprocess.call(['supervisorctl', cmd, 'qli'])
+    log(f"start to run supervisorctl {cmd} {client}")
+    subprocess.call(['supervisorctl', cmd, {client}])
 
 
 def run_script(script):
@@ -149,12 +156,13 @@ def run_script(script):
     log(f"start to run script {script} ")
     os.system(script)
 
+
 def execute(command):
     cmd = command['cmd']
     param = command['param']
     log(f'start to run cmd {cmd}')
     if cmd in ['stop', 'start', 'restart']:
-        current_state = get_state()
+        current_state = get_state(param)
         if cmd == 'stop':
             if current_state == 'STOPPED':
                 return
@@ -164,20 +172,22 @@ def execute(command):
         elif cmd == 'restart':
             if current_state == 'STOPPED':
                 cmd = 'start'
-        run_supervisor_cmd(cmd)
+        run_supervisor_cmd(cmd, param)
     elif cmd == 'upgrade':
         url = param['url']
         upgrade(url)
     elif cmd == 'script':
         script = param['script']
         run_script(script)
+    elif cmd == 'gitpull':
+        gitpull()
 
 
-def get_state():
+def get_state(client):
     """get state"""
-    result = subprocess.run(['supervisorctl', 'status', 'qli'], capture_output=True, shell=False, encoding='UTF-8')
+    result = subprocess.run(['supervisorctl', 'status', client], capture_output=True, shell=False, encoding='UTF-8')
     text = result.stdout
-    state = ""
+    state = "None"
     if result:
         data = split_line(text)
         state = data[1]
@@ -196,6 +206,10 @@ def main(secret, host_name):
         execute(command)
 
     state = get_state()
+
+    state = {}
+    for client in CLIENTS:
+        state[client] = get_state(client)
 
     end(secret, host_name, state)
 
@@ -222,6 +236,5 @@ if __name__ == '__main__':
             host_name = args.host_name
             main(secret=secret, host_name=host_name)
         except:
-            raise
             pass
         time.sleep(interval)
