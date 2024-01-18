@@ -262,7 +262,6 @@ if __name__ == '__main__':
             log("exit")
             break
         except:
-            raise
             pass
         time.sleep(interval)
 
