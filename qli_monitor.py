@@ -113,7 +113,7 @@ def gitpull():
     os.system("export https_proxy=http://v2ray.mingyan.com:20171")
     os.chdir('/data/shell/chia-kit')
     os.system('git pull')
-    os._exit(0)
+    sys.exit(0)
 
 
 def upgrade(url):
@@ -206,8 +206,6 @@ def main(secret, host_name):
     if command:
         execute(command)
 
-    state = get_state()
-
     state = {}
     for client in CLIENTS:
         state[client] = get_state(client)
@@ -236,8 +234,11 @@ if __name__ == '__main__':
         try:
             host_name = args.host_name
             main(secret=secret, host_name=host_name)
+        except SystemExit as e:
+            log("exit")
+            break
         except:
-            #raise
+            raise
             pass
         time.sleep(interval)
 
