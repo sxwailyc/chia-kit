@@ -131,7 +131,9 @@ def rmdir(name):
 
 
 def gitpull():
+    log("chdir /data/shell/chia-kit")
     os.chdir('/data/shell/chia-kit')
+    log("git pull")
     os.system('git pull')
 
 
