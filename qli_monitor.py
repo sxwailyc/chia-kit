@@ -193,7 +193,7 @@ def execute(command):
         elif cmd == 'restart':
             if current_state == 'STOPPED':
                 cmd = 'start'
-        run_supervisor_cmd(cmd, param)
+        run_supervisor_cmd(cmd, param['client'])
     elif cmd == 'upgrade':
         url = param['url']
         upgrade(url)
