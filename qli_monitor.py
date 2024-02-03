@@ -102,7 +102,7 @@ def memory_info():
     return info.total, info.used
 
 
-def end(secret, host_name, state):
+def end(secret, host_name, state, command):
     memory_total, memory_used = memory_info()
     cpu_count, cpu_percent, cpu_freq_max, cpu_freq_current = cpu_info()
     data = json.dumps({
@@ -115,7 +115,8 @@ def end(secret, host_name, state):
         "cpu_freq_current": cpu_freq_current,
         "memory_total": memory_total,
         "memory_used": memory_used,
-        "ip": get_local_ip()
+        "ip": get_local_ip(),
+        "finish": True if command else False
     })
     post("https://api.mingyan.com/api/qli/monitor", data)
 
@@ -232,7 +233,7 @@ def main(secret, host_name):
     for client in CLIENTS:
         state[client] = get_state(client)
 
-    end(secret, host_name, state)
+    end(secret, host_name, state, command)
 
     if command and command['cmd'] == 'gitpull':
         sys.exit(0)
