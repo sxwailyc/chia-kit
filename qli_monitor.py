@@ -164,7 +164,7 @@ def upgrade(url):
 
     execute({
         'cmd': 'start',
-        'param': {}
+        'param': {'client': 'qli'}
     })
 
 
