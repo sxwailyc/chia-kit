@@ -141,7 +141,7 @@ def gitpull():
 def upgrade(url):
     execute({
         'cmd': 'stop',
-        'param': {}
+        'param': {'client': 'qli'}
     })
 
     if not os.path.exists(DOWNLOAD_DIR):
