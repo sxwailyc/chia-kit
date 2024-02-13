@@ -16,7 +16,7 @@ from datetime import datetime
 
 DOWNLOAD_DIR = "/data/app/qli-app/"
 
-CLIENTS = ['qli', 'bitnet', 'xcb', 'hac']
+CLIENTS = ['qli', 'bitnet', 'xcb', 'hac', 'mangonote']
 
 
 def log(msg):
