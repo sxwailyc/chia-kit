@@ -24,10 +24,8 @@ def get_cpu_temperature_key(cpu_model):
 
 def get_temperature():
     cpu_model = get_cpu_model()
-    print(cpu_model)
     top_key, second_key = get_cpu_temperature_key(cpu_model)
     temperatures = psutil.sensors_temperatures()
-    print(top_key, second_key)
     for key, items in temperatures.items():
         if key != top_key:
             continue

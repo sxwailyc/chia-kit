@@ -13,6 +13,7 @@ import subprocess
 import argparse
 import os
 from datetime import datetime
+import cpu_util
 
 DOWNLOAD_DIR = "/data/app/qli-app/"
 
@@ -94,7 +95,8 @@ def cpu_info():
     cpu_count = psutil.cpu_count()
     percent = psutil.cpu_percent()
     freq = psutil.cpu_freq()
-    return cpu_count, percent, freq.max, freq.current
+    cpu_temperature = cpu_util.get_temperature()
+    return cpu_count, percent, freq.max, freq.current, cpu_temperature
 
 
 def memory_info():
@@ -104,7 +106,7 @@ def memory_info():
 
 def end(secret, host_name, state, command):
     memory_total, memory_used = memory_info()
-    cpu_count, cpu_percent, cpu_freq_max, cpu_freq_current = cpu_info()
+    cpu_count, cpu_percent, cpu_freq_max, cpu_freq_current, cpu_temperature = cpu_info()
     data = json.dumps({
         "secret": secret,
         "host_name": host_name,
@@ -112,6 +114,7 @@ def end(secret, host_name, state, command):
         "cpu_percent": cpu_percent,
         "cpu_count": cpu_count,
         "cpu_freq_max": cpu_freq_max,
+        "cpu_temperature": cpu_temperature,
         "cpu_freq_current": cpu_freq_current,
         "memory_total": memory_total,
         "memory_used": memory_used,
