@@ -19,9 +19,12 @@ def get_cpu_temperature_key(cpu_model):
     if cpu_model.startswith("AMD Ryzen"):
         return 'k10temp', 'Tctl'
 
+    return None, None
+
 
 def get_temperature():
     cpu_model = get_cpu_model()
+    print(cpu_model)
     top_key, second_key = get_cpu_temperature_key(cpu_model)
     temperatures = psutil.sensors_temperatures()
     print(top_key, second_key)
