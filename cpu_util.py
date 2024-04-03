@@ -8,8 +8,7 @@ def get_cpu_model():
     with open('/proc/cpuinfo') as fd:
         for line in fd:
             if line.startswith('model name'):
-                cpu_model = line.split(':')[1].strip().split()
-                cpu_model = cpu_model[0] + ' ' + cpu_model[2] + ' ' + cpu_model[-1]
+                cpu_model = line.split(':')[1].strip()
                 return cpu_model
     return 'unknow'
 
