@@ -16,7 +16,7 @@ def get_cpu_model():
 def get_cpu_temperature_key(cpu_model):
     if cpu_model.startswith("Intel(R) Xeon(R)"):
         return 'coretemp', 'Package id 0'
-    if cpu_model.startswith("AMD Ryzen"):
+    if cpu_model.startswith("AMD"):
         return 'k10temp', 'Tctl'
 
     return None, None
