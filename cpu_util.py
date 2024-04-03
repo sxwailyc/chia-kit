@@ -26,7 +26,7 @@ def get_temperature():
     temperatures = psutil.sensors_temperatures()
     print(top_key, second_key)
     for key, items in temperatures.items():
-        if key != 'top_key':
+        if key != top_key:
             continue
 
         for item in items:
