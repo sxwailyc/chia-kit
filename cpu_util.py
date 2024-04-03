@@ -6,9 +6,11 @@ import psutil
 
 def get_temperature():
     temperatures = psutil.sensors_temperatures()
-    for key, item in temperatures.items():
+    for key, items in temperatures.items():
         print(key)
-        print(item, type(item))
+        #print(items, type(items))
+        for item in items:
+            print(item, type(item))
 
 
 if __name__ == '__main__':
