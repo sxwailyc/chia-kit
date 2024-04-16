@@ -64,9 +64,10 @@ class FastsmhRunner:
 
     def plot(self, folder):
         export = f"export LD_LIBRARY_PATH={os.path.join(os.path.dirname(__file__), 'bin')}/:$LD_LIBRARY_PATH"
-        cmd = f"{export} && {self.bin} -datadir {folder} -nonces {self.nonces} -numUnits {self.numUnits}"
+        os.system(export)
+        cmd = f"{self.bin} -datadir {folder} -nonces {self.nonces} -numUnits {self.numUnits}"
         log(cmd)
-        p = Popen([cmd], stdout=PIPE)
+        p = Popen([self.bin, "-datadir", folder, "-nonces", self.nonces, "-numUnits", self.numUnits], stdout=PIPE)
         while True:
             line = p.stdout.readline()
             if not line:
