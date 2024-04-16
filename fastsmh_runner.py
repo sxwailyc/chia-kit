@@ -72,7 +72,7 @@ class FastsmhRunner:
             line = p.stdout.readline()
             if not line:
                 break
-            print(line)
+            print(line.decode("utf8"))
 
     def start_new_plot(self):
         for folder in self.folders:
