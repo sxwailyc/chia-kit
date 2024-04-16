@@ -40,7 +40,7 @@ class FastsmhRunner:
 
     def is_interrupt(self, folder):
         metadata = os.path.join(folder, "postdata_metadata.json")
-        if os.path.exists(metadata):
+        if not os.path.exists(metadata):
             return False, 0
         with open(metadata) as f:
             data = json.load(f)
@@ -56,6 +56,7 @@ class FastsmhRunner:
         for folder in self.folders:
             sub_folders = os.listdir(folder)
             for sub_folder in sub_folders:
+                sub_folder = os.path.join(folder, sub_folder)
                 is_interrupt, num_units = self.is_interrupt(sub_folder)
                 if is_interrupt:
                     self.numUnits = num_units
@@ -63,8 +64,6 @@ class FastsmhRunner:
                     self.plot(sub_folder)
 
     def plot(self, folder):
-        #export = f"export LD_LIBRARY_PATH={os.path.join(os.path.dirname(__file__), 'bin')}/:$LD_LIBRARY_PATH"
-        #os.system(export)
         cmd = f"{self.bin} -datadir {folder} -nonces {self.nonces} -numUnits {self.numUnits}"
         log(cmd)
         os.environ['LD_LIBRARY_PATH'] = f"{os.path.join(os.path.dirname(__file__), 'bin')}/:{os.environ['LD_LIBRARY_PATH']}"
@@ -73,7 +72,7 @@ class FastsmhRunner:
             line = p.stdout.readline()
             if not line:
                 break
-            log(line)
+            print(line)
 
     def start_new_plot(self):
         for folder in self.folders:
