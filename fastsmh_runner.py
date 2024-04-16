@@ -96,11 +96,12 @@ if __name__ == '__main__':
     """)
 
     parser.add_argument("--num-units", metavar="", type=int, help="numUnits, default is 32", default=32)
-    parser.add_argument("--num-units", metavar="", type=int, help="numUnits, default is 32", default=32)
+    parser.add_argument("--nonces", metavar="", type=int, help="nonces, default is 288", default=32)
     parser.add_argument("-d", "--dir", nargs='+', action='append', help="plot dirs")
 
     args = parser.parse_args()
     numUnits = args.num_units
+    nonces = args.nonces
 
     folders = args.dir
     if folders:
@@ -109,5 +110,5 @@ if __name__ == '__main__':
         print(f"{bin} please specify -d param.")
         sys.exit(0)
 
-    run = FastsmhRunner(folders, numUnits)
+    run = FastsmhRunner(folders, numUnits, nonces)
     run.start()
