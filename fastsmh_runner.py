@@ -63,10 +63,11 @@ class FastsmhRunner:
                     self.plot(sub_folder)
 
     def plot(self, folder):
-        export = f"export LD_LIBRARY_PATH={os.path.join(os.path.dirname(__file__), 'bin')}/:$LD_LIBRARY_PATH"
-        os.system(export)
+        #export = f"export LD_LIBRARY_PATH={os.path.join(os.path.dirname(__file__), 'bin')}/:$LD_LIBRARY_PATH"
+        #os.system(export)
         cmd = f"{self.bin} -datadir {folder} -nonces {self.nonces} -numUnits {self.numUnits}"
         log(cmd)
+        os.environ['LD_LIBRARY_PATH'] = f"{os.path.join(os.path.dirname(__file__), 'bin')}/:{os.environ['LD_LIBRARY_PATH']}"
         p = Popen([self.bin, f"-datadir {folder}", f"-nonces {self.nonces}", f"-numUnits {self.numUnits}"], stdout=PIPE)
         while True:
             line = p.stdout.readline()
