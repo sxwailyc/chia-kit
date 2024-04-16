@@ -67,7 +67,7 @@ class FastsmhRunner:
         os.system(export)
         cmd = f"{self.bin} -datadir {folder} -nonces {self.nonces} -numUnits {self.numUnits}"
         log(cmd)
-        p = Popen([self.bin, "-datadir", folder, "-nonces", self.nonces, "-numUnits", self.numUnits], stdout=PIPE)
+        p = Popen([self.bin, f"-datadir {folder}", f"-nonces {self.nonces}", f"-numUnits {self.numUnits}"], stdout=PIPE)
         while True:
             line = p.stdout.readline()
             if not line:
