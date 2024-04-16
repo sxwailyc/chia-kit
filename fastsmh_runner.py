@@ -8,6 +8,9 @@ import argparse
 import sys
 from datetime import datetime
 
+from subprocess import Popen, PIPE
+
+
 GB = 1024 * 1024 * 1024
 
 
@@ -63,7 +66,12 @@ class FastsmhRunner:
         export = f"export LD_LIBRARY_PATH={os.path.join(os.path.dirname(__file__), 'bin')}/:$LD_LIBRARY_PATH"
         cmd = f"{export} && {self.bin} -datadir {folder} -nonces {self.nonces} -numUnits {self.numUnits}"
         log(cmd)
-        os.system(cmd)
+        p = Popen([cmd], stdout=PIPE)
+        while True:
+            line = p.stdout.readline()
+            if not line:
+                break
+            log(line)
 
     def start_new_plot(self):
         for folder in self.folders:
