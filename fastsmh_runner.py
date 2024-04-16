@@ -61,9 +61,7 @@ class FastsmhRunner:
 
     def plot(self, folder):
         export = f"export LD_LIBRARY_PATH={os.path.join(os.path.dirname(__file__), 'bin')}/:$LD_LIBRARY_PATH"
-        log(export)
-        os.system(export)
-        cmd = f"{self.bin} -datadir {folder} -nonces {self.nonces} -numUnits {self.numUnits}"
+        cmd = f"{export} && {self.bin} -datadir {folder} -nonces {self.nonces} -numUnits {self.numUnits}"
         log(cmd)
         os.system(cmd)
 
@@ -107,7 +105,7 @@ if __name__ == '__main__':
     if folders:
         folders = [x[0] for x in folders]
     else:
-        print(f"{bin} please specify -d param.")
+        print(f"please specify -d param.")
         sys.exit(0)
 
     run = FastsmhRunner(folders, numUnits, nonces)
