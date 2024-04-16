@@ -49,8 +49,8 @@ class FastsmhRunner:
             last_file_idx = (NumUnits * 64 * GB / MaxFileSize - 1)
             last_file = f"postdata_{last_file_idx}.bin"
             if not os.path.exists(last_file) or os.path.getsize(last_file) < MaxFileSize:
-                return True
-        return False
+                return True, NumUnits
+        return False, 0
 
     def restart_interrupt_plot(self):
         for folder in self.folders:
@@ -60,7 +60,7 @@ class FastsmhRunner:
                 is_interrupt, num_units = self.is_interrupt(sub_folder)
                 if is_interrupt:
                     self.numUnits = num_units
-                    log(f"continue interrupt plot: {sub_folder}")
+                    log(f"continue interrupt plot: {sub_folder}, num_units: {num_units}")
                     self.plot(sub_folder)
 
     def plot(self, folder):
