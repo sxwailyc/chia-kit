@@ -65,7 +65,6 @@ def print_speed():
     global current_folder, state
     while True:
         try:
-            print(current_folder)
             if not current_folder:
                 time.sleep(1)
                 continue
