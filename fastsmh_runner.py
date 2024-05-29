@@ -66,6 +66,8 @@ def print_speed():
     while True:
         try:
             print(current_folder)
+            if not current_folder:
+                continue
             metadata = os.path.join(current_folder, "postdata_metadata.json")
             if os.path.exists(metadata):
                 with open(metadata) as f:
@@ -89,6 +91,7 @@ def print_speed():
                         state[bin_file] = file_size
         except Exception as e:
             print(e)
+            raise e
             pass
         time.sleep(20)
 
