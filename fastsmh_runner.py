@@ -46,7 +46,7 @@ def is_interrupt(folder):
         NumUnits = data["NumUnits"]
         MaxFileSize = data["MaxFileSize"]
         last_file_idx = (NumUnits * 64 * GB / MaxFileSize - 1)
-        last_file = f"postdata_{last_file_idx}.bin"
+        last_file = os.path.join(folder, f"postdata_{last_file_idx}.bin")
         if not os.path.exists(last_file) or os.path.getsize(last_file) < MaxFileSize:
             return True, NumUnits
     return False, 0
@@ -67,6 +67,7 @@ def print_speed():
         try:
             print(current_folder)
             if not current_folder:
+                time.sleep(1)
                 continue
             metadata = os.path.join(current_folder, "postdata_metadata.json")
             if os.path.exists(metadata):
@@ -76,19 +77,20 @@ def print_speed():
                     MaxFileSize = data["MaxFileSize"]
                     total_file = int(NumUnits * 64 * GB / MaxFileSize)
                     for i in range(total_file):
-                        bin_file = f"postdata_{i}.bin"
-                        if not os.path.exists(bin_file):
+                        bin_file_name = f"postdata_{i}.bin"
+                        bin_file_path = os.path.join(current_folder, bin_file_name)
+                        if not os.path.exists(bin_file_path):
                             continue
-                        file_size = os.path.getsize(bin_file)
+                        file_size = os.path.getsize(bin_file_path)
                         if file_size >= MaxFileSize:
                             continue
-                        pre_file_size = state.get(bin_file, 0)
+                        pre_file_size = state.get(bin_file_name, 0)
                         if pre_file_size > 0:
                             rate = file_size / MaxFileSize * 100
                             speed = (file_size - pre_file_size) / 20
                             print("%s: %.2fGB/%.2fGB %.2f%%% %.2fMB/s" % (
-                            bin_file, size_to_gb(file_size), size_to_gb(MaxFileSize), rate, size_to_mb(speed)))
-                        state[bin_file] = file_size
+                            bin_file_name, size_to_gb(file_size), size_to_gb(MaxFileSize), rate, size_to_mb(speed)))
+                        state[bin_file_name] = file_size
         except Exception as e:
             print(e)
             raise e
