@@ -59,13 +59,20 @@ def is_interrupt(folder):
     return False, 0
 
 
+def is_directory_empty(path):
+    return not any([os.path.isfile(os.path.join(path, f)) for f in os.listdir(path)])
+
+
 def rename_plot(folder):
     key_bin = os.path.join(folder, "key.bin")
+    if not os.path.exists(key_bin):
+        return
     with open(key_bin) as f:
         s = f.read()
         key = s[64:]
         target = os.path.join(os.path.dirname(folder), f'post_{key}')
-        shutil.move(folder, target)
+        if target != folder:
+            shutil.move(folder, target)
 
 
 def print_speed():
@@ -99,13 +106,13 @@ def print_speed():
                             rate = file_size / MaxFileSize * 100
                             all_gpu_finish += (file_size - pre_file_size)
                             speed = (file_size - pre_file_size) / 20
-                            log("文件:%s: %.2fGB / %.2fGB %.2f%% %.2fMB/s" % (
+                            log("文件:%s: %.2fGB/%.2fGB %.2f%% %.2fMB/s" % (
                                 bin_file_name, size_to_gb(file_size), size_to_gb(MaxFileSize), rate, size_to_mb(speed)))
                         state[bin_file_name] = file_size
 
                     total_rate = total_finish / total_size * 100
                     total_speed = all_gpu_finish / 20
-                    log("汇总:%s: %.2fTB / %.2fTB %.2f%% %.2fMB/s" % (
+                    log("汇总:%s: %.2fTB/%.2fTB %.2f%% %.2fMB/s" % (
                        current_folder, size_to_tb(total_finish), size_to_tb(total_size), total_rate, size_to_mb(total_speed)))
 
         except Exception as e:
@@ -130,7 +137,7 @@ class FastsmhRunner:
                 sub_folder = os.path.join(folder, sub_folder)
                 interrupt, num_units = is_interrupt(sub_folder)
                 if interrupt:
-                    log(f"continue interrupt plot: {sub_folder}, num_units: {num_units}")
+                    log(f"继续运行中断的P盘任务, 目录:{sub_folder}, 图容量: {size_to_tb(num_units * 64 * GB)}TB")
                     self.plot(sub_folder, num_units)
 
     def plot(self, folder, num_units):
@@ -148,6 +155,8 @@ class FastsmhRunner:
                 break
             # print(line.decode("utf8").replace("\n", ""))
 
+        rename_plot(folder)
+
     def start_new_plot(self):
         for folder in self.folders:
             free = get_free(folder)
@@ -156,17 +165,18 @@ class FastsmhRunner:
 
             for i in range(10):
                 sub_dir = os.path.join(folder, f"post_{i + 1}")
-                if os.path.exists(sub_dir):
+                if os.path.exists(sub_dir) and is_directory_empty(sub_dir):
                     continue
-                else:
-                    log(f"create dir{sub_dir}")
-                    os.makedirs(sub_dir)
-                    self.plot(sub_dir, self.numUnits)
-                    rename_plot(sub_dir)
 
-                    free = get_free(folder)
-                    if free < self.numUnits * 64 * GB:
-                        break
+                if not os.path.exists(sub_dir):
+                    log(f"创建目录: {sub_dir}")
+                    os.makedirs(sub_dir)
+
+                self.plot(sub_dir, self.numUnits)
+
+                free = get_free(folder)
+                if free < self.numUnits * 64 * GB:
+                    break
 
     def start(self):
 
