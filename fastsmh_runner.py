@@ -14,8 +14,17 @@ from datetime import datetime
 from subprocess import Popen, PIPE
 
 current_folder = None
+state = {}
 
 GB = 1024 * 1024 * 1024
+
+
+def size_to_gb(size):
+    return round(size / 1024 / 1024 / 1024, 2)
+
+
+def size_to_mb(size):
+    return round(size / 1024 / 1024, 2)
 
 
 def log(msg):
@@ -51,11 +60,37 @@ def rename_plot(folder):
         target = os.path.join(os.path.dirname(folder), f'post_{key}')
         shutil.move(folder, target)
 
+
 def print_speed():
-    global current_folder
+    global current_folder, state
     while True:
-        print(current_folder)
+        try:
+            print(current_folder)
+            metadata = os.path.join(current_folder, "postdata_metadata.json")
+            if os.path.exists(metadata):
+                with open(metadata) as f:
+                    data = json.load(f)
+                    NumUnits = data["NumUnits"]
+                    MaxFileSize = data["MaxFileSize"]
+                    total_file = NumUnits * 64 * GB / MaxFileSize
+                    for i in range(total_file):
+                        bin_file = f"postdata_{i}.bin"
+                        if not os.path.exists(bin_file):
+                            continue
+                        file_size = os.path.getsize(bin_file)
+                        if file_size >= MaxFileSize:
+                            continue
+                        pre_file_size = state.get(bin_file, 0)
+                        if pre_file_size > 0:
+                            rate = file_size / MaxFileSize * 100
+                            speed = (file_size - pre_file_size) / 20
+                            print("%s: %.2fGB/%.2fGB %.2f%%% %.2fMB/s" % (
+                            bin_file, size_to_gb(file_size), size_to_gb(MaxFileSize), rate, size_to_mb(speed)))
+                        state[bin_file] = file_size
+        except:
+            pass
         time.sleep(20)
+
 
 class FastsmhRunner:
 
@@ -77,8 +112,10 @@ class FastsmhRunner:
                     self.plot(sub_folder, num_units)
 
     def plot(self, folder, num_units):
-        global current_folder
+        global current_folder, state
         current_folder = folder
+        state.clear()
+
         cmd = f"{self.bin} -datadir {folder} -nonces {self.nonces} -numUnits {num_units}"
         log(cmd)
         os.environ['LD_LIBRARY_PATH'] = f"{os.path.join(os.path.dirname(__file__), 'bin')}/"
