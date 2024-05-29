@@ -184,3 +184,5 @@ if __name__ == '__main__':
 
     run = FastsmhRunner(folders, numUnits, nonces)
     run.start()
+
+    input("please input any key to exit!")
