@@ -81,7 +81,7 @@ class FastsmhRunner:
         current_folder = folder
         cmd = f"{self.bin} -datadir {folder} -nonces {self.nonces} -numUnits {num_units}"
         log(cmd)
-        os.environ['LD_LIBRARY_PATH'] = f"{os.path.join(os.path.dirname(__file__), 'bin')}/:{os.environ['LD_LIBRARY_PATH']}"
+        os.environ['LD_LIBRARY_PATH'] = f"{os.path.join(os.path.dirname(__file__), 'bin')}/"
         p = Popen([self.bin, "-datadir", folder, "-nonces", f"{self.nonces}", "-numUnits", f"{num_units}"], stdout=PIPE)
         while True:
             line = p.stdout.readline()
@@ -112,10 +112,10 @@ class FastsmhRunner:
     def start(self):
 
         t = threading.Thread(target=print_speed)
+        t.daemon = True
         t.start()
 
         self.restart_interrupt_plot()
-
         self.start_new_plot()
 
 
