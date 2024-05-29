@@ -3,6 +3,9 @@
 
 import threading
 
+import requests
+import uuid
+import hashlib
 import json
 import shutil
 import os
@@ -25,6 +28,10 @@ def size_to_gb(size):
 
 def size_to_mb(size):
     return round(size / 1024 / 1024, 2)
+
+
+def size_to_tb(size):
+    return round(size / 1024 / 1024 / 1024 / 1024, 2)
 
 
 def log(msg):
@@ -75,24 +82,34 @@ def print_speed():
                     NumUnits = data["NumUnits"]
                     MaxFileSize = data["MaxFileSize"]
                     total_file = int(NumUnits * 64 * GB / MaxFileSize)
+                    total_size = NumUnits * 64 * GB
+                    total_finish = 0
+                    all_gpu_finish = 0
                     for i in range(total_file):
                         bin_file_name = f"postdata_{i}.bin"
                         bin_file_path = os.path.join(current_folder, bin_file_name)
                         if not os.path.exists(bin_file_path):
                             continue
                         file_size = os.path.getsize(bin_file_path)
+                        total_finish += file_size
                         if file_size >= MaxFileSize:
                             continue
                         pre_file_size = state.get(bin_file_name, 0)
                         if pre_file_size > 0:
                             rate = file_size / MaxFileSize * 100
+                            all_gpu_finish += (file_size - pre_file_size)
                             speed = (file_size - pre_file_size) / 20
-                            log("%s: %.2fGB/%.2fGB %.2f%% %.2fMB/s" % (
-                            bin_file_name, size_to_gb(file_size), size_to_gb(MaxFileSize), rate, size_to_mb(speed)))
+                            log("文件:%s: %.2fGB / %.2fGB %.2f%% %.2fMB/s" % (
+                                bin_file_name, size_to_gb(file_size), size_to_gb(MaxFileSize), rate, size_to_mb(speed)))
                         state[bin_file_name] = file_size
+
+                    total_rate = total_finish / total_size * 100
+                    total_speed = all_gpu_finish / 20
+                    log("汇总:%s: %.2fTB / %.2fTB %.2f%% %.2fMB/s" % (
+                       current_folder, size_to_tb(total_finish), size_to_tb(total_size), total_rate, size_to_mb(total_speed)))
+
         except Exception as e:
             print(e)
-            raise e
             pass
         time.sleep(20)
 
@@ -129,7 +146,7 @@ class FastsmhRunner:
             line = p.stdout.readline()
             if not line:
                 break
-            print(line.decode("utf8").replace("\n", ""))
+            # print(line.decode("utf8").replace("\n", ""))
 
     def start_new_plot(self):
         for folder in self.folders:
@@ -153,22 +170,42 @@ class FastsmhRunner:
 
     def start(self):
 
-        print("start 1")
-
         t = threading.Thread(target=print_speed)
         t.daemon = True
         t.start()
 
-        print("start 2")
-
         self.restart_interrupt_plot()
-
-        print("start 3")
 
         self.start_new_plot()
 
 
+def verify_license():
+    node = uuid.getnode()
+    nonestr = str(uuid.uuid4())[:32]
+    t = int(time.time())
+    raw = f'{node}-{nonestr}-d3e616f6b5be276111f227c80b4ec516-{t}'
+    sign = hashlib.md5(raw.encode(encoding='utf-8')).hexdigest()
+    data = {
+        "node": node,
+        "sign": sign,
+        "nonestr": nonestr,
+        "t": t
+    }
+    response = requests.post("https://api.mingyan.com/api/license/smh", data, timeout=10)
+    rsp = json.loads(response.text)
+    if rsp["status"] == 200:
+        info = rsp['data']
+        if info['approve'] == 1 and info["nonestr"] == nonestr:
+            return
+
+    mc_code = hashlib.md5(f"{node}-d3e616f6b5be276111f227c80b4ec516".encode(encoding='utf-8')).hexdigest()
+    print(f"机器未授权.code[{mc_code}]")
+    sys.exit(0)
+
+
 if __name__ == '__main__':
+
+    verify_license()
 
     parser = argparse.ArgumentParser(description="""
        This script is for fastsmh runner.
@@ -186,7 +223,7 @@ if __name__ == '__main__':
     if folders:
         folders = [x[0] for x in folders]
     else:
-        print(f"please specify -d param.")
+        print(f"请用 -d 参数指定P盘目录，可以重复使用添加多个目录.")
         sys.exit(0)
 
     try:
@@ -194,5 +231,3 @@ if __name__ == '__main__':
         run.start()
     except Exception as e:
         print(e)
-
-    input("please input any key to exit!")
