@@ -153,11 +153,18 @@ class FastsmhRunner:
 
     def start(self):
 
+        print("start 1")
+
         t = threading.Thread(target=print_speed)
         t.daemon = True
         t.start()
 
+        print("start 2")
+
         self.restart_interrupt_plot()
+
+        print("start 3")
+
         self.start_new_plot()
 
 
