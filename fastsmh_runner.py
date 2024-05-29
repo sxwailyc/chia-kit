@@ -74,7 +74,7 @@ def print_speed():
                     data = json.load(f)
                     NumUnits = data["NumUnits"]
                     MaxFileSize = data["MaxFileSize"]
-                    total_file = NumUnits * 64 * GB / MaxFileSize
+                    total_file = int(NumUnits * 64 * GB / MaxFileSize)
                     for i in range(total_file):
                         bin_file = f"postdata_{i}.bin"
                         if not os.path.exists(bin_file):
