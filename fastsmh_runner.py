@@ -88,7 +88,7 @@ def print_speed():
                         if pre_file_size > 0:
                             rate = file_size / MaxFileSize * 100
                             speed = (file_size - pre_file_size) / 20
-                            print("%s: %.2fGB/%.2fGB %.2f%%% %.2fMB/s" % (
+                            print("%s: %.2fGB/%.2fGB %.2f%% %.2fMB/s" % (
                             bin_file_name, size_to_gb(file_size), size_to_gb(MaxFileSize), rate, size_to_mb(speed)))
                         state[bin_file_name] = file_size
         except Exception as e:
