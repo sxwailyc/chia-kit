@@ -87,7 +87,8 @@ def print_speed():
                             print("%s: %.2fGB/%.2fGB %.2f%%% %.2fMB/s" % (
                             bin_file, size_to_gb(file_size), size_to_gb(MaxFileSize), rate, size_to_mb(speed)))
                         state[bin_file] = file_size
-        except:
+        except Exception as e:
+            print(e)
             pass
         time.sleep(20)
 
