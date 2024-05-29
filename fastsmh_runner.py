@@ -189,7 +189,10 @@ if __name__ == '__main__':
         print(f"please specify -d param.")
         sys.exit(0)
 
-    run = FastsmhRunner(folders, numUnits, nonces)
-    run.start()
+    try:
+        run = FastsmhRunner(folders, numUnits, nonces)
+        run.start()
+    except Exception as e:
+        print(e)
 
     input("please input any key to exit!")
