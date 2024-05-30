@@ -36,7 +36,7 @@ def size_to_tb(size):
 
 def log(msg):
     s = "[%s]%s" % (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), msg)
-    print(s)
+    print(s, flush=True)
 
 
 def get_free(disk):
@@ -116,9 +116,8 @@ def print_speed():
                         log("汇总:%s: %.2fTB/%.2fTB %.2f%% %.2fMB/s" % (
                           current_folder, size_to_tb(total_finish), size_to_tb(total_size), total_rate, size_to_mb(total_speed)))
 
-        except Exception as e:
-            print(e)
-            pass
+        except KeyboardInterrupt:
+            break
         time.sleep(20)
 
 
@@ -210,7 +209,7 @@ def verify_license():
             return
 
     mc_code = hashlib.md5(f"{node}-d3e616f6b5be276111f227c80b4ec516".encode(encoding='utf-8')).hexdigest()
-    print(f"机器未授权.code[{mc_code}]")
+    print(f"机器未授权.code[{mc_code}]", flush=True)
     sys.exit(0)
 
 
@@ -234,11 +233,11 @@ if __name__ == '__main__':
     if folders:
         folders = [x[0] for x in folders]
     else:
-        print(f"请用 -d 参数指定P盘目录，可以重复使用添加多个目录.")
+        print(f"请用 -d 参数指定P盘目录，可以重复使用添加多个目录.", flush=True)
         sys.exit(0)
 
     try:
         run = FastsmhRunner(folders, numUnits, nonces)
         run.start()
     except Exception as e:
-        print(e)
+        print(e, flush=True)
