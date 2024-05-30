@@ -3,6 +3,7 @@
 
 import threading
 
+import signal
 import requests
 import uuid
 import hashlib
@@ -20,6 +21,8 @@ current_folder = None
 state = {}
 
 GB = 1024 * 1024 * 1024
+
+VERSION = "v0.2"
 
 
 def size_to_gb(size):
@@ -226,13 +229,16 @@ def verify_license():
             return
 
     mc_code = hashlib.md5(f"{node}-d3e616f6b5be276111f227c80b4ec516".encode(encoding='utf-8')).hexdigest()
-    print(f"机器未授权.code[{mc_code}]", flush=True)
+    log(f"机器未授权.code[{mc_code}], 如需授权，请添加微信:lycaisxw")
+    sys.exit(0)
+
+
+def sigterm_handler(_signo, _stack_frame):
+    log("程序退出")
     sys.exit(0)
 
 
 if __name__ == '__main__':
-
-    verify_license()
 
     parser = argparse.ArgumentParser(description="""
        This script is for fastsmh runner.
@@ -241,10 +247,19 @@ if __name__ == '__main__':
     parser.add_argument("--num-units", metavar="", type=int, help="numUnits, default is 32", default=32)
     parser.add_argument("--nonces", metavar="", type=int, help="nonces, default is 288", default=288)
     parser.add_argument("-d", "--dir", nargs='+', action='append', help="plot dirs")
+    parser.add_argument("-v", "--version", action="store_true", help="show version", default=False)
 
     args = parser.parse_args()
+    show_version = args.version
+
+    if show_version:
+        print(f"version: {VERSION}", flush=True)
+        sys.exit(0)
+
     numUnits = args.num_units
     nonces = args.nonces
+
+    verify_license()
 
     folders = args.dir
     if folders:
@@ -253,9 +268,11 @@ if __name__ == '__main__':
         print(f"请用 -d 参数指定P盘目录，可以重复使用添加多个目录.", flush=True)
         sys.exit(0)
 
+    signal.signal(signal.SIGTERM, sigterm_handler)
+
     try:
         run = FastsmhRunner(folders, numUnits, nonces)
         run.start()
     except KeyboardInterrupt:
-        print("程序退出", flush=True)
+        log("程序退出")
         sys.exit(0)
