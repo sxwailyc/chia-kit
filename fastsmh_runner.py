@@ -59,11 +59,28 @@ def is_interrupt(folder):
     return False, 0
 
 
+def is_finish(folder):
+    metadata = os.path.join(folder, "postdata_metadata.json")
+    if not os.path.exists(metadata):
+        return False
+    with open(metadata) as f:
+        data = json.load(f)
+        NumUnits = data["NumUnits"]
+        MaxFileSize = data["MaxFileSize"]
+        last_file_idx = (NumUnits * 64 * GB / MaxFileSize - 1)
+        last_file = os.path.join(folder, f"postdata_{last_file_idx}.bin")
+        if os.path.exists(last_file) and os.path.getsize(last_file) >= MaxFileSize:
+            return True
+    return False
+
+
 def is_directory_empty(path):
     return not any([os.path.isfile(os.path.join(path, f)) for f in os.listdir(path)])
 
 
 def rename_plot(folder):
+    if not is_finish(folder):
+        return
     key_bin = os.path.join(folder, "key.bin")
     if not os.path.exists(key_bin):
         return
@@ -114,7 +131,8 @@ def print_speed():
                     total_speed = all_gpu_finish / 20
                     if total_speed > 0:
                         log("汇总:%s: %.2fTB/%.2fTB %.2f%% %.2fMB/s" % (
-                          current_folder, size_to_tb(total_finish), size_to_tb(total_size), total_rate, size_to_mb(total_speed)))
+                            current_folder, size_to_tb(total_finish), size_to_tb(total_size), total_rate,
+                            size_to_mb(total_speed)))
 
         except KeyboardInterrupt:
             break
@@ -153,7 +171,6 @@ class FastsmhRunner:
             line = p.stdout.readline()
             if not line:
                 break
-            # print(line.decode("utf8").replace("\n", ""))
 
         rename_plot(folder)
 
@@ -239,5 +256,6 @@ if __name__ == '__main__':
     try:
         run = FastsmhRunner(folders, numUnits, nonces)
         run.start()
-    except Exception as e:
-        print(e, flush=True)
+    except KeyboardInterrupt:
+        print("程序退出", flush=True)
+        sys.exit(0)
