@@ -18,11 +18,16 @@ from datetime import datetime, timedelta
 from subprocess import Popen, PIPE
 
 current_folder = None
+current_num_units = 0
+
 state = {}
 
 GB = 1024 * 1024 * 1024
 
+
+METADAT_JSON_FILE = "postdata_metadata.json"
 VERSION = "v0.2"
+MAX_FILESIZE = 34359738368
 
 
 def size_to_gb(size):
@@ -48,31 +53,29 @@ def get_free(disk):
 
 
 def is_interrupt(folder):
-    metadata = os.path.join(folder, "postdata_metadata.json")
+    metadata = os.path.join(folder, METADAT_JSON_FILE)
     if not os.path.exists(metadata):
         return False, 0
     with open(metadata) as f:
         data = json.load(f)
         NumUnits = data["NumUnits"]
-        MaxFileSize = data["MaxFileSize"]
-        last_file_idx = (NumUnits * 64 * GB / MaxFileSize - 1)
+        last_file_idx = (NumUnits * 64 * GB / MAX_FILESIZE - 1)
         last_file = os.path.join(folder, f"postdata_{last_file_idx}.bin")
-        if not os.path.exists(last_file) or os.path.getsize(last_file) < MaxFileSize:
+        if not os.path.exists(last_file) or os.path.getsize(last_file) < MAX_FILESIZE:
             return True, NumUnits
     return False, 0
 
 
 def is_finish(folder):
-    metadata = os.path.join(folder, "postdata_metadata.json")
+    metadata = os.path.join(folder, METADAT_JSON_FILE)
     if not os.path.exists(metadata):
         return False
     with open(metadata) as f:
         data = json.load(f)
         NumUnits = data["NumUnits"]
-        MaxFileSize = data["MaxFileSize"]
-        last_file_idx = (NumUnits * 64 * GB / MaxFileSize - 1)
+        last_file_idx = (NumUnits * 64 * GB / MAX_FILESIZE - 1)
         last_file = os.path.join(folder, f"postdata_{last_file_idx}.bin")
-        if os.path.exists(last_file) and os.path.getsize(last_file) >= MaxFileSize:
+        if os.path.exists(last_file) and os.path.getsize(last_file) >= MAX_FILESIZE:
             return True
     return False
 
@@ -96,39 +99,34 @@ def rename_plot(folder):
 
 
 def print_speed():
-    global current_folder, state
+    global current_folder, state, current_num_units
     while True:
         try:
             if not current_folder:
                 time.sleep(1)
                 continue
-            metadata = os.path.join(current_folder, "postdata_metadata.json")
-            if os.path.exists(metadata):
-                with open(metadata) as f:
-                    data = json.load(f)
-                    NumUnits = data["NumUnits"]
-                    MaxFileSize = data["MaxFileSize"]
-                    total_file = int(NumUnits * 64 * GB / MaxFileSize)
-                    total_size = NumUnits * 64 * GB
-                    total_finish = 0
-                    all_gpu_finish = 0
-                    for i in range(total_file):
-                        bin_file_name = f"postdata_{i}.bin"
-                        bin_file_path = os.path.join(current_folder, bin_file_name)
-                        if not os.path.exists(bin_file_path):
-                            continue
-                        file_size = os.path.getsize(bin_file_path)
-                        total_finish += file_size
-                        if file_size >= MaxFileSize:
-                            continue
-                        pre_file_size = state.get(bin_file_name, 0)
-                        if pre_file_size > 0:
-                            rate = file_size / MaxFileSize * 100
-                            all_gpu_finish += (file_size - pre_file_size)
-                            speed = (file_size - pre_file_size) / 20
-                            log("文件:%s: %.2fGB/%.2fGB %.2f%% %.2fMB/s" % (
-                                bin_file_name, size_to_gb(file_size), size_to_gb(MaxFileSize), rate, size_to_mb(speed)))
-                        state[bin_file_name] = file_size
+            if current_num_units > 0:
+                total_file = int(current_num_units * 64 * GB / MAX_FILESIZE)
+                total_size = current_num_units * 64 * GB
+                total_finish = 0
+                all_gpu_finish = 0
+                for i in range(total_file):
+                    bin_file_name = f"postdata_{i}.bin"
+                    bin_file_path = os.path.join(current_folder, bin_file_name)
+                    if not os.path.exists(bin_file_path):
+                        continue
+                    file_size = os.path.getsize(bin_file_path)
+                    total_finish += file_size
+                    if file_size >= MAX_FILESIZE:
+                        continue
+                    pre_file_size = state.get(bin_file_name, 0)
+                    if pre_file_size > 0:
+                        rate = file_size / MAX_FILESIZE * 100
+                        all_gpu_finish += (file_size - pre_file_size)
+                        speed = (file_size - pre_file_size) / 20
+                        log("文件:%s: %.2fGB/%.2fGB %.2f%% %.2fMB/s" % (
+                            bin_file_name, size_to_gb(file_size), size_to_gb(MAX_FILESIZE), rate, size_to_mb(speed)))
+                    state[bin_file_name] = file_size
 
                     total_rate = total_finish / total_size * 100
                     total_speed = all_gpu_finish / 20
@@ -166,8 +164,9 @@ class FastsmhRunner:
                     self.plot(sub_folder, num_units)
 
     def plot(self, folder, num_units):
-        global current_folder, state
+        global current_folder, state, current_num_units
         current_folder = folder
+        current_num_units = num_units
         state.clear()
 
         cmd = f"{self.bin} -datadir {folder} -nonces {self.nonces} -numUnits {num_units}"
@@ -274,9 +273,5 @@ if __name__ == '__main__':
 
     signal.signal(signal.SIGTERM, sigterm_handler)
 
-    try:
-        run = FastsmhRunner(folders, numUnits, nonces)
-        run.start()
-    except KeyboardInterrupt:
-        log("程序退出")
-        sys.exit(0)
+    run = FastsmhRunner(folders, numUnits, nonces)
+    run.start()
