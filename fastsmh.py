@@ -128,16 +128,16 @@ def print_speed():
                             bin_file_name, size_to_gb(file_size), size_to_gb(MAX_FILESIZE), rate, size_to_mb(speed)))
                     state[bin_file_name] = file_size
 
-                    total_rate = total_finish / total_size * 100
-                    total_speed = all_gpu_finish / 20
-                    if total_speed > 0:
-                        remain_size = total_size - total_finish
-                        remain_time = remain_size / total_speed
-                        finish_time = datetime.now() + timedelta(seconds=remain_time)
+                total_rate = total_finish / total_size * 100
+                total_speed = all_gpu_finish / 20
+                if total_speed > 0:
+                    remain_size = total_size - total_finish
+                    remain_time = remain_size / total_speed
+                    finish_time = datetime.now() + timedelta(seconds=remain_time)
 
-                        log("汇总:%s: %.2fTB/%.2fTB %.2f%% %.2fMB/s 预计完成时间: %s" % (
-                            current_folder, size_to_tb(total_finish), size_to_tb(total_size), total_rate,
-                            size_to_mb(total_speed), finish_time.strftime("%Y-%m-%d %H:%M:%S")))
+                    log("汇总:%s: %.2fTB/%.2fTB %.2f%% %.2fMB/s 预计完成时间: %s" % (
+                        current_folder, size_to_tb(total_finish), size_to_tb(total_size), total_rate,
+                        size_to_mb(total_speed), finish_time.strftime("%Y-%m-%d %H:%M:%S")))
 
         except KeyboardInterrupt:
             break
