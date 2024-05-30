@@ -173,10 +173,10 @@ class FastsmhRunner:
         log(cmd)
         os.environ['LD_LIBRARY_PATH'] = f"{os.path.join(os.path.dirname(__file__), 'bin')}/"
         p = Popen([self.bin, "-datadir", folder, "-nonces", f"{self.nonces}", "-numUnits", f"{num_units}"], stdout=PIPE)
-        while True:
-            line = p.stdout.readline()
-            if not line:
-                break
+        ret_code = p.wait()
+        if ret_code != 0:
+            log(f"P图执行失败[{cmd}]")
+            sys.exit(0)
 
         rename_plot(folder)
 
