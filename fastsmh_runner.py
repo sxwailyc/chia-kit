@@ -13,7 +13,7 @@ import os
 import argparse
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from subprocess import Popen, PIPE
 
@@ -132,10 +132,13 @@ def print_speed():
 
                     total_rate = total_finish / total_size * 100
                     total_speed = all_gpu_finish / 20
+                    remain_size = total_size - total_finish
+                    remain_time = remain_size / total_speed
+                    finish_time = datetime.now() + timedelta(seconds=remain_time)
                     if total_speed > 0:
-                        log("汇总:%s: %.2fTB/%.2fTB %.2f%% %.2fMB/s" % (
+                        log("汇总:%s: %.2fTB/%.2fTB %.2f%% %.2fMB/s 预计完成时间: %s" % (
                             current_folder, size_to_tb(total_finish), size_to_tb(total_size), total_rate,
-                            size_to_mb(total_speed)))
+                            size_to_mb(total_speed)), finish_time.strftime("%Y-%m-%d %H:%M:%S"))
 
         except KeyboardInterrupt:
             break
