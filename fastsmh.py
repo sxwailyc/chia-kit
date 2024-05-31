@@ -150,7 +150,7 @@ class FastsmhRunner:
         self.folders = sorted(folders)
         self.numUnits = numUnits
         self.nonces = nonces
-        self.bin = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "fastsmh")
+        self.bin = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "postcli")
         self.current_folder = None
 
     def restart_interrupt_plot(self):
