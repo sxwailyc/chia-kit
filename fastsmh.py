@@ -172,7 +172,7 @@ class FastsmhRunner:
         cmd = f"{self.bin} -datadir {folder} -nonces {self.nonces} -numUnits {num_units}"
         log(cmd)
         os.environ['LD_LIBRARY_PATH'] = f"{os.path.join(os.path.dirname(__file__), 'bin')}/"
-        p = Popen([self.bin, "-datadir", folder, "-nonces", f"{self.nonces}", "-numUnits", f"{num_units}"], stdout=PIPE)
+        p = Popen([self.bin, "-datadir", folder, "-nonces", f"{self.nonces}", "-numUnits", f"{num_units}"], stdout=PIPE, stderr=PIPE)
         ret_code = p.wait()
         if ret_code != 0:
             log(f"P图执行失败[{cmd}]")
