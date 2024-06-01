@@ -106,6 +106,7 @@ def rename_plot(folder):
         if target != folder:
             cmd = "mv %s %s" % (folder, target)
             print(cmd)
+            print(type(cmd))
             os.system(cmd)
 
 
