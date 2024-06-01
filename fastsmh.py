@@ -270,6 +270,8 @@ if __name__ == '__main__':
         print(f"version: {VERSION}", flush=True)
         sys.exit(0)
 
+    log(f"启动P图程序，版本[{VERSION}]")
+
     numUnits = args.num_units
     nonces = args.nonces
 
