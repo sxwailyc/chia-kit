@@ -103,7 +103,7 @@ def rename_plot(folder):
         print(target)
         print(folder)
         if target != folder:
-            shutil.move(folder, target)
+            os.rename(folder, target)
 
 
 def print_speed():
