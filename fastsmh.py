@@ -62,8 +62,8 @@ def is_interrupt(folder):
         last_file_idx = (NumUnits * 64 * GB / MAX_FILESIZE - 1)
         last_file = os.path.join(folder, f"postdata_{last_file_idx}.bin")
         print(last_file)
-        s = os.path.getsize(last_file)
-        print(s)
+        #s = os.path.getsize(last_file)
+        #print(s)
         print(MAX_FILESIZE)
         if not os.path.exists(last_file) or os.path.getsize(last_file) < MAX_FILESIZE:
             return True, NumUnits
