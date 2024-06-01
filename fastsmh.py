@@ -102,8 +102,9 @@ def rename_plot(folder):
         target = os.path.join(os.path.dirname(folder), f'post_{key}')
         print(target)
         print(folder)
+        log("重命名 %s 为 %s" % (folder, target))
         if target != folder:
-            os.rename(folder, target)
+            os.system("mv %s %s" % (folder, target))
 
 
 def print_speed():
