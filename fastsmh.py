@@ -90,7 +90,7 @@ def is_directory_empty(path):
 
 def rename_plot(folder):
     if not is_finish(folder):
-        print("folder not exist")
+        print("folder not exist:%s" % folder)
         return
     key_bin = os.path.join(folder, "key.bin")
     if not os.path.exists(key_bin):
