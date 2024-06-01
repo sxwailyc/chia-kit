@@ -77,7 +77,7 @@ def is_finish(folder):
     with open(metadata) as f:
         data = json.load(f)
         NumUnits = data["NumUnits"]
-        last_file_idx = (NumUnits * 64 * GB / MAX_FILESIZE - 1)
+        last_file_idx = int(NumUnits * 64 * GB / MAX_FILESIZE - 1)
         last_file = os.path.join(folder, f"postdata_{last_file_idx}.bin")
         if os.path.exists(last_file) and os.path.getsize(last_file) >= MAX_FILESIZE:
             return True
