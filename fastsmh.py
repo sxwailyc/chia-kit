@@ -96,18 +96,20 @@ def rename_plot(folder):
     if not os.path.exists(key_bin):
         print("key_bin not exist:%s" % key_bin)
         return
+    target = None
     with open(key_bin) as f:
         s = f.read()
         key = s[64:]
         target = os.path.join(os.path.dirname(folder), f'post_{key}')
-        print(target)
-        print(folder)
-        log("重命名 %s 为 %s" % (folder, target))
-        if target != folder:
-            cmd = "mv %s %s" % (folder, target)
-            print(cmd)
-            print(type(cmd))
-            os.system(cmd)
+
+    print(target)
+    print(folder)
+    log("重命名 %s 为 %s" % (folder, target))
+    if target != folder:
+        cmd = "mv %s %s" % (folder, target)
+        print(cmd)
+        print(type(cmd))
+        os.system(cmd)
 
 
 def print_speed():
