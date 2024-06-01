@@ -90,14 +90,18 @@ def is_directory_empty(path):
 
 def rename_plot(folder):
     if not is_finish(folder):
+        print("folder not exist")
         return
     key_bin = os.path.join(folder, "key.bin")
     if not os.path.exists(key_bin):
+        print("key_bin not exist:%s" % key_bin)
         return
     with open(key_bin) as f:
         s = f.read()
         key = s[64:]
         target = os.path.join(os.path.dirname(folder), f'post_{key}')
+        print(target)
+        print(folder)
         if target != folder:
             shutil.move(folder, target)
 
