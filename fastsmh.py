@@ -15,7 +15,7 @@ import sys
 import time
 from datetime import datetime, timedelta
 
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, check_output
 
 current_folder = None
 current_num_units = 0
@@ -26,7 +26,7 @@ GB = 1024 * 1024 * 1024
 
 
 METADAT_JSON_FILE = "postdata_metadata.json"
-VERSION = "v0.3"
+VERSION = "v0.4"
 MAX_FILESIZE = 34359738368
 
 
@@ -59,12 +59,8 @@ def is_interrupt(folder):
     with open(metadata) as f:
         data = json.load(f)
         NumUnits = data["NumUnits"]
-        last_file_idx = (NumUnits * 64 * GB / MAX_FILESIZE - 1)
+        last_file_idx = int(NumUnits * 64 * GB / MAX_FILESIZE - 1)
         last_file = os.path.join(folder, f"postdata_{last_file_idx}.bin")
-        print(last_file)
-        #s = os.path.getsize(last_file)
-        #print(s)
-        print(MAX_FILESIZE)
         if not os.path.exists(last_file) or os.path.getsize(last_file) < MAX_FILESIZE:
             return True, NumUnits
     return False, 0
@@ -90,11 +86,9 @@ def is_directory_empty(path):
 
 def rename_plot(folder):
     if not is_finish(folder):
-        print("folder not exist:%s" % folder)
         return
     key_bin = os.path.join(folder, "key.bin")
     if not os.path.exists(key_bin):
-        print("key_bin not exist:%s" % key_bin)
         return
     target = None
     with open(key_bin) as f:
@@ -102,13 +96,9 @@ def rename_plot(folder):
         key = s[64:]
         target = os.path.join(os.path.dirname(folder), f'post_{key}')
 
-    print(target)
-    print(folder)
     log("重命名 %s 为 %s" % (folder, target))
     if target != folder:
         cmd = "mv %s %s" % (folder, target)
-        print(cmd)
-        print(type(cmd))
         os.system(cmd)
 
 
@@ -226,6 +216,11 @@ class FastsmhRunner:
         self.start_new_plot()
 
 
+def get_system_uuid():
+    d = check_output('dmidecode -s system-uuid'.split())
+    return d.decode("utf-8").replace("\n", "")
+
+
 def verify_license():
     node = uuid.getnode()
     nonestr = str(uuid.uuid4())[:32]
@@ -236,7 +231,9 @@ def verify_license():
         "node": node,
         "sign": sign,
         "nonestr": nonestr,
-        "t": t
+        "t": t,
+        "version": VERSION,
+        "systemUuid": get_system_uuid()
     }
     response = requests.post("https://api.mingyan.com/api/license/smh", data, timeout=10)
     rsp = json.loads(response.text)
