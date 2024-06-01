@@ -104,7 +104,9 @@ def rename_plot(folder):
         print(folder)
         log("重命名 %s 为 %s" % (folder, target))
         if target != folder:
-            os.system("mv %s %s" % (folder, target))
+            cmd = "mv %s %s" % (folder, target)
+            print(cmd)
+            os.system(cmd)
 
 
 def print_speed():
