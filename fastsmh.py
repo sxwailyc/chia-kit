@@ -221,28 +221,45 @@ def get_system_uuid():
     return d.decode("utf-8").replace("\n", "")
 
 
+def get_baseboard_serial_number():
+    d = check_output('dmidecode -s baseboard-serial-number'.split())
+    return d.decode("utf-8").replace("\n", "")
+
+
+def get_machine_id():
+    d = check_output('cat /etc/machine-id', shell=True)
+    return d.decode("utf-8").replace("\n", "")
+
+
+def get_mac():
+    d = check_output("cat /sys/class/net/$(ip route show default | awk 'NR==1' | awk '/default/ {print $5}')/address", shell=True)
+    return d.decode("utf-8").replace("\n", "")
+
+
 def verify_license():
-    node = uuid.getnode()
+    mac = get_mac()
     nonestr = str(uuid.uuid4())[:32]
     t = int(time.time())
-    raw = f'{node}-{nonestr}-d3e616f6b5be276111f227c80b4ec516-{t}'
+    raw = f'{mac}-{nonestr}-d3e616f6b5be276111f227c80b4ec516-{t}'
     sign = hashlib.md5(raw.encode(encoding='utf-8')).hexdigest()
     data = {
-        "node": node,
+        "mac": mac,
         "sign": sign,
         "nonestr": nonestr,
         "t": t,
         "version": VERSION,
-        "systemUuid": get_system_uuid()
+        "systemUuid": get_system_uuid(),
+        "baseboardSerialNumber": get_baseboard_serial_number(),
+        "machineId": get_machine_id()
     }
-    response = requests.post("https://api.mingyan.com/api/license/smh", data, timeout=10)
+    response = requests.post("https://api.mingyan.com/api/license/smhv2", data, timeout=10)
     rsp = json.loads(response.text)
     if rsp["status"] == 200:
         info = rsp['data']
         if info['approve'] == 1 and info["nonestr"] == nonestr:
             return
 
-    mc_code = hashlib.md5(f"{node}-d3e616f6b5be276111f227c80b4ec516".encode(encoding='utf-8')).hexdigest()
+    mc_code = hashlib.md5(f"{mac}-d3e616f6b5be276111f227c80b4ec516".encode(encoding='utf-8')).hexdigest()
     log(f"机器未授权.code[{mc_code}], 如需授权，请添加微信:lycaisxw")
     sys.exit(0)
 
@@ -250,6 +267,10 @@ def verify_license():
 def sigterm_handler(_signo, _stack_frame):
     log("程序退出")
     sys.exit(0)
+
+
+def is_root():
+    return os.getuid() == 0
 
 
 if __name__ == '__main__':
@@ -268,6 +289,10 @@ if __name__ == '__main__':
 
     if show_version:
         print(f"version: {VERSION}", flush=True)
+        sys.exit(0)
+
+    if not is_root():
+        print("请切换到root用户")
         sys.exit(0)
 
     log(f"启动P图程序，版本[{VERSION}]")
