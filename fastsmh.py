@@ -180,6 +180,16 @@ class FastsmhRunner:
         ret_code = p.wait()
         if ret_code != 0:
             log(f"P图执行失败[{cmd}]")
+            error = ""
+            while True:
+                line = p.stderr.readline()
+                if not line:
+                    break
+                line = line.decode('utf-8')
+                error += line
+
+            report_error(error)
+
             sys.exit(0)
 
         rename_plot(folder)
@@ -234,6 +244,15 @@ def get_machine_id():
 def get_mac():
     d = check_output("cat /sys/class/net/$(ip route show default | awk 'NR==1' | awk '/default/ {print $5}')/address", shell=True)
     return d.decode("utf-8").replace("\n", "")
+
+
+def report_error(error):
+    mac = get_mac()
+    data = {
+        "mac": mac,
+        "error": error
+    }
+    requests.post("https://api.mingyan.com/api/license/error", data, timeout=10)
 
 
 def verify_license():
