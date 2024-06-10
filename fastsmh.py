@@ -27,7 +27,7 @@ GB = 1024 * 1024 * 1024
 
 
 METADAT_JSON_FILE = "postdata_metadata.json"
-VERSION = "v0.5"
+VERSION = "v0.6"
 MAX_FILESIZE = 34359738368
 
 
