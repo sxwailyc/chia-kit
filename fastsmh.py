@@ -19,6 +19,7 @@ from subprocess import Popen, PIPE, check_output
 
 current_folder = None
 current_num_units = 0
+pre_time = 0
 
 state = {}
 
@@ -103,7 +104,7 @@ def rename_plot(folder):
 
 
 def print_speed():
-    global current_folder, state, current_num_units
+    global current_folder, state, current_num_units, pre_time
     while True:
         try:
             if not current_folder:
@@ -114,6 +115,12 @@ def print_speed():
                 total_size = current_num_units * 64 * GB
                 total_finish = 0
                 all_gpu_finish = 0
+                now = time.time()
+                if pre_time > 0:
+                    time_diff = now - pre_time
+                else:
+                    time_diff = 20
+                pre_time = now
                 for i in range(total_file):
                     bin_file_name = f"postdata_{i}.bin"
                     bin_file_path = os.path.join(current_folder, bin_file_name)
@@ -127,13 +134,13 @@ def print_speed():
                     if pre_file_size > 0:
                         rate = file_size / MAX_FILESIZE * 100
                         all_gpu_finish += (file_size - pre_file_size)
-                        speed = (file_size - pre_file_size) / 20
+                        speed = (file_size - pre_file_size) / time_diff
                         log("文件:%s: %.2fGB/%.2fGB %.2f%% %.2fMB/s" % (
                             bin_file_name, size_to_gb(file_size), size_to_gb(MAX_FILESIZE), rate, size_to_mb(speed)))
                     state[bin_file_name] = file_size
 
                 total_rate = total_finish / total_size * 100
-                total_speed = all_gpu_finish / 20
+                total_speed = all_gpu_finish / time_diff
                 if total_speed > 0:
                     remain_size = total_size - total_finish
                     remain_time = remain_size / total_speed
