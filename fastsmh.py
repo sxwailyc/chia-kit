@@ -57,7 +57,7 @@ def get_free(disk):
 def is_interrupt(folder):
     metadata = os.path.join(folder, METADAT_JSON_FILE)
     if not os.path.exists(metadata):
-        return False, 0
+        return False, 0, 0
     with open(metadata) as f:
         data = json.load(f)
         NumUnits = data["NumUnits"]
