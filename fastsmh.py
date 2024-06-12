@@ -55,7 +55,6 @@ def get_free(disk):
 
 
 def is_interrupt(folder):
-    global max_filesize
     metadata = os.path.join(folder, METADAT_JSON_FILE)
     if not os.path.exists(metadata):
         return False, 0
@@ -108,15 +107,15 @@ def rename_plot(folder):
 
 
 def print_speed():
-    global current_folder, state, current_num_units, pre_time, max_filesize
+    global current_folder, state, current_num_units, pre_time, current_max_filesize
     while True:
         try:
             info = {}
             if not current_folder:
                 time.sleep(1)
                 continue
-            if current_num_units > 0 and max_filesize > 0:
-                total_file = int(current_num_units * 64 * GB / max_filesize)
+            if current_num_units > 0 and current_max_filesize > 0:
+                total_file = int(current_num_units * 64 * GB / current_max_filesize)
                 total_size = current_num_units * 64 * GB
                 total_finish = 0
                 all_gpu_finish = 0
@@ -133,15 +132,15 @@ def print_speed():
                         continue
                     file_size = os.path.getsize(bin_file_path)
                     total_finish += file_size
-                    if file_size >= max_filesize:
+                    if file_size >= current_max_filesize:
                         continue
                     pre_file_size = state.get(bin_file_name, 0)
                     if pre_file_size > 0:
-                        rate = file_size / max_filesize * 100
+                        rate = file_size / current_max_filesize * 100
                         all_gpu_finish += (file_size - pre_file_size)
                         speed = (file_size - pre_file_size) / time_diff
                         log("文件:%s: %.2fGB/%.2fGB %.2f%% %.2fMB/s" % (
-                            bin_file_name, size_to_gb(file_size), size_to_gb(max_filesize), rate, size_to_mb(speed)))
+                            bin_file_name, size_to_gb(file_size), size_to_gb(current_max_filesize), rate, size_to_mb(speed)))
 
                         info[bin_file_name] = {
                             "speed": size_to_mb(speed),
