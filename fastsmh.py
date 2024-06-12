@@ -256,7 +256,7 @@ class FastsmhRunner:
                     log(f"创建目录: {sub_dir}")
                     os.makedirs(sub_dir)
 
-                self.plot(sub_dir, num_units)
+                self.plot(sub_dir, num_units, self.maxFileSize)
 
                 go, num_units = self.is_continue(folder)
                 if not go:
