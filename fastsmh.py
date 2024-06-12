@@ -19,16 +19,17 @@ from subprocess import Popen, PIPE, check_output
 
 current_folder = None
 current_num_units = 0
+current_max_filesize = 0
 pre_time = 0
 
 state = {}
 
 GB = 1024 * 1024 * 1024
+LOG_INTERVAL = 60
 
 
 METADAT_JSON_FILE = "postdata_metadata.json"
-VERSION = "v0.6"
-MAX_FILESIZE = 34359738368
+VERSION = "v0.7"
 
 
 def size_to_gb(size):
@@ -54,17 +55,19 @@ def get_free(disk):
 
 
 def is_interrupt(folder):
+    global max_filesize
     metadata = os.path.join(folder, METADAT_JSON_FILE)
     if not os.path.exists(metadata):
         return False, 0
     with open(metadata) as f:
         data = json.load(f)
         NumUnits = data["NumUnits"]
-        last_file_idx = int(NumUnits * 64 * GB / MAX_FILESIZE - 1)
+        MaxFileSize = data["MaxFileSize"]
+        last_file_idx = int(NumUnits * 64 * GB / MaxFileSize - 1)
         last_file = os.path.join(folder, f"postdata_{last_file_idx}.bin")
-        if not os.path.exists(last_file) or os.path.getsize(last_file) < MAX_FILESIZE:
-            return True, NumUnits
-    return False, 0
+        if not os.path.exists(last_file) or os.path.getsize(last_file) < MaxFileSize:
+            return True, NumUnits, MaxFileSize
+    return False, 0, 0
 
 
 def is_finish(folder):
@@ -74,9 +77,10 @@ def is_finish(folder):
     with open(metadata) as f:
         data = json.load(f)
         NumUnits = data["NumUnits"]
-        last_file_idx = int(NumUnits * 64 * GB / MAX_FILESIZE - 1)
+        MaxFileSize = data["MaxFileSize"]
+        last_file_idx = int(NumUnits * 64 * GB / MaxFileSize - 1)
         last_file = os.path.join(folder, f"postdata_{last_file_idx}.bin")
-        if os.path.exists(last_file) and os.path.getsize(last_file) >= MAX_FILESIZE:
+        if os.path.exists(last_file) and os.path.getsize(last_file) >= MaxFileSize:
             return True
     return False
 
@@ -104,14 +108,15 @@ def rename_plot(folder):
 
 
 def print_speed():
-    global current_folder, state, current_num_units, pre_time
+    global current_folder, state, current_num_units, pre_time, max_filesize
     while True:
         try:
+            info = {}
             if not current_folder:
                 time.sleep(1)
                 continue
-            if current_num_units > 0:
-                total_file = int(current_num_units * 64 * GB / MAX_FILESIZE)
+            if current_num_units > 0 and max_filesize > 0:
+                total_file = int(current_num_units * 64 * GB / max_filesize)
                 total_size = current_num_units * 64 * GB
                 total_finish = 0
                 all_gpu_finish = 0
@@ -119,7 +124,7 @@ def print_speed():
                 if pre_time > 0:
                     time_diff = now - pre_time
                 else:
-                    time_diff = 20
+                    time_diff = LOG_INTERVAL
                 pre_time = now
                 for i in range(total_file):
                     bin_file_name = f"postdata_{i}.bin"
@@ -128,15 +133,22 @@ def print_speed():
                         continue
                     file_size = os.path.getsize(bin_file_path)
                     total_finish += file_size
-                    if file_size >= MAX_FILESIZE:
+                    if file_size >= max_filesize:
                         continue
                     pre_file_size = state.get(bin_file_name, 0)
                     if pre_file_size > 0:
-                        rate = file_size / MAX_FILESIZE * 100
+                        rate = file_size / max_filesize * 100
                         all_gpu_finish += (file_size - pre_file_size)
                         speed = (file_size - pre_file_size) / time_diff
                         log("文件:%s: %.2fGB/%.2fGB %.2f%% %.2fMB/s" % (
-                            bin_file_name, size_to_gb(file_size), size_to_gb(MAX_FILESIZE), rate, size_to_mb(speed)))
+                            bin_file_name, size_to_gb(file_size), size_to_gb(max_filesize), rate, size_to_mb(speed)))
+
+                        info[bin_file_name] = {
+                            "speed": size_to_mb(speed),
+                            "size": size_to_gb(file_size),
+                            "pre_size": size_to_gb(pre_file_size)
+                        }
+
                     state[bin_file_name] = file_size
 
                 total_rate = total_finish / total_size * 100
@@ -150,17 +162,26 @@ def print_speed():
                         current_folder, size_to_tb(total_finish), size_to_tb(total_size), total_rate,
                         size_to_mb(total_speed), finish_time.strftime("%Y-%m-%d %H:%M:%S")))
 
+                    info["total"] = {
+                        "speed": size_to_mb(total_speed),
+                        "size": size_to_gb(total_finish),
+                        "finish_time": finish_time.strftime("%Y-%m-%d %H:%M:%S")
+                    }
+                    report(info)
+
         except KeyboardInterrupt:
             break
-        time.sleep(20)
+        time.sleep(LOG_INTERVAL)
 
 
 class FastsmhRunner:
 
-    def __init__(self, folders, numUnits=32, nonces=288):
+    def __init__(self, folders, numUnits=32, reservedSize=0, commitmentAtxId=None, maxFileSize=34359738368):
         self.folders = sorted(folders)
         self.numUnits = numUnits
-        self.nonces = nonces
+        self.reservedSize = reservedSize
+        self.commitmentAtxId = commitmentAtxId
+        self.maxFileSize = maxFileSize
         self.bin = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "postcli")
         self.current_folder = None
 
@@ -169,21 +190,22 @@ class FastsmhRunner:
             sub_folders = os.listdir(folder)
             for sub_folder in sub_folders:
                 sub_folder = os.path.join(folder, sub_folder)
-                interrupt, num_units = is_interrupt(sub_folder)
+                interrupt, num_units, max_filesize = is_interrupt(sub_folder)
                 if interrupt:
                     log(f"继续运行中断的P盘任务, 目录:{sub_folder}, 图容量: {size_to_tb(num_units * 64 * GB)}TB")
-                    self.plot(sub_folder, num_units)
+                    self.plot(sub_folder, num_units, max_filesize)
 
-    def plot(self, folder, num_units):
-        global current_folder, state, current_num_units
+    def plot(self, folder, num_units, max_filesize):
+        global current_folder, state, current_num_units, current_max_filesize
         current_folder = folder
         current_num_units = num_units
+        current_max_filesize = max_filesize
         state.clear()
 
-        cmd = f"{self.bin} -datadir {folder} -nonces {self.nonces} -numUnits {num_units}"
+        cmd = f"{self.bin} -datadir {folder} -numUnits {num_units} -maxFileSize {max_filesize}"
         log(cmd)
         os.environ['LD_LIBRARY_PATH'] = f"{os.path.join(os.path.dirname(__file__), 'bin')}/"
-        p = Popen([self.bin, "-datadir", folder, "-nonces", f"{self.nonces}", "-numUnits", f"{num_units}"], stdout=PIPE, stderr=PIPE)
+        p = Popen([self.bin, "-datadir", folder, "-numUnits", f"{num_units}", "-maxFileSize", f"{max_filesize}", "-commitmentAtxId", f"{self.commitmentAtxId}"], stdout=PIPE, stderr=PIPE)
         ret_code = p.wait()
         if ret_code != 0:
             log(f"P图执行失败[{cmd}]")
@@ -201,10 +223,29 @@ class FastsmhRunner:
 
         rename_plot(folder)
 
+    def is_continue(self, folder):
+        free = get_free(folder)
+        if free < 4 * 64 * GB:
+            return False, 0
+
+        if free < self.numUnits * 64 * GB:
+            if self.reservedSize >= 0:
+                use_space = free - self.reservedSize * GB
+                num_units = int(use_space / (64 * GB))
+                if num_units >= 4:
+                    return True, num_units
+                else:
+                    return False, 0
+            else:
+                return False, 0
+        else:
+            return True, self.numUnits
+
     def start_new_plot(self):
         for folder in self.folders:
-            free = get_free(folder)
-            if free < self.numUnits * 64 * GB:
+
+            go, num_units = self.is_continue(folder)
+            if not go:
                 continue
 
             for i in range(10):
@@ -216,10 +257,10 @@ class FastsmhRunner:
                     log(f"创建目录: {sub_dir}")
                     os.makedirs(sub_dir)
 
-                self.plot(sub_dir, self.numUnits)
+                self.plot(sub_dir, num_units)
 
-                free = get_free(folder)
-                if free < self.numUnits * 64 * GB:
+                go, num_units = self.is_continue(folder)
+                if not go:
                     break
 
     def start(self):
@@ -262,6 +303,19 @@ def report_error(error):
     requests.post("https://api.mingyan.com/api/license/error", data, timeout=10)
 
 
+def report(info):
+    try:
+        mac = get_mac()
+        info["time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        data = {
+            "mac": mac,
+            "content": json.dumps(info)
+        }
+        requests.post("https://api.mingyan.com/api/license/report", data, timeout=10)
+    except:
+        pass
+
+
 def verify_license():
     mac = get_mac()
     nonestr = str(uuid.uuid4())[:32]
@@ -283,7 +337,7 @@ def verify_license():
     if rsp["status"] == 200:
         info = rsp['data']
         if info['approve'] == 1 and info["nonestr"] == nonestr:
-            return
+            return info['commitmentAtxId']
 
     mc_code = hashlib.md5(f"{mac}-d3e616f6b5be276111f227c80b4ec516".encode(encoding='utf-8')).hexdigest()
     log(f"机器未授权.code[{mc_code}], 如需授权，请添加微信:lycaisxw")
@@ -306,8 +360,10 @@ if __name__ == '__main__':
     """)
 
     parser.add_argument("--num-units", metavar="", type=int, help="numUnits, default is 32", default=32)
-    parser.add_argument("--nonces", metavar="", type=int, help="nonces, default is 288", default=288)
+    parser.add_argument("--max-filesize", metavar="", type=int, help="maxFileSize, default is 34359738368", default=34359738368)
+    parser.add_argument("--reserved-size", metavar="", type=int, help="reserved size, default is 0", default=0)
     parser.add_argument("-d", "--dir", nargs='+', action='append', help="plot dirs")
+
     parser.add_argument("-v", "--version", action="store_true", help="show version", default=False)
 
     args = parser.parse_args()
@@ -324,9 +380,10 @@ if __name__ == '__main__':
     log(f"启动P图程序，版本[{VERSION}]")
 
     numUnits = args.num_units
-    nonces = args.nonces
+    maxFileSize = args.max_filesize
+    reservedSize = args.reserved_size
 
-    verify_license()
+    commitmentAtxId = verify_license()
 
     folders = args.dir
     if folders:
@@ -337,5 +394,5 @@ if __name__ == '__main__':
 
     signal.signal(signal.SIGTERM, sigterm_handler)
 
-    run = FastsmhRunner(folders, numUnits, nonces)
+    run = FastsmhRunner(folders, numUnits, reservedSize, commitmentAtxId, maxFileSize)
     run.start()
