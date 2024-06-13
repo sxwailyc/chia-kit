@@ -177,12 +177,13 @@ def print_speed():
 
 class FastsmhRunner:
 
-    def __init__(self, folders, numUnits=32, reservedSize=0, commitmentAtxId=None, maxFileSize=34359738368):
+    def __init__(self, folders, numUnits=32, reservedSize=0, commitmentAtxId=None, maxFileSize=34359738368, batchMultiple=1):
         self.folders = sorted(folders)
         self.numUnits = numUnits
         self.reservedSize = reservedSize
         self.commitmentAtxId = commitmentAtxId
         self.maxFileSize = maxFileSize
+        self.computeBatchSize = (1 << 20) * batchMultiple
         self.bin = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "postcli")
         self.current_folder = None
 
@@ -203,10 +204,10 @@ class FastsmhRunner:
         current_max_filesize = max_filesize
         state.clear()
 
-        cmd = f"{self.bin} -datadir {folder} -numUnits {num_units} -maxFileSize {max_filesize}"
+        cmd = f"{self.bin} -datadir {folder} -numUnits {num_units} -maxFileSize {max_filesize} -computeBatchSize {self.computeBatchSize}"
         log(cmd)
         os.environ['LD_LIBRARY_PATH'] = f"{os.path.join(os.path.dirname(__file__), 'bin')}/"
-        p = Popen([self.bin, "-datadir", folder, "-numUnits", f"{num_units}", "-maxFileSize", f"{max_filesize}", "-commitmentAtxId", f"{commitmentAtxId}", "-provider", "0"], stdout=PIPE, stderr=PIPE)
+        p = Popen([self.bin, "-datadir", folder, "-numUnits", f"{num_units}", "-maxFileSize", f"{max_filesize}", "-commitmentAtxId", f"{commitmentAtxId}", "-computeBatchSize", f"{self.computeBatchSize}", "-provider", "0"], stdout=PIPE, stderr=PIPE)
         ret_code = p.wait()
         if ret_code != 0:
             log(f"P图执行失败[{cmd}]")
@@ -362,6 +363,7 @@ if __name__ == '__main__':
 
     parser.add_argument("--num-units", metavar="", type=int, help="numUnits, default is 32", default=32)
     parser.add_argument("--max-filesize", metavar="", type=int, help="maxFileSize, default is 32", default=32)
+    parser.add_argument("--batch-multiple", metavar="", type=int, help="batchMultiple, default is 1", default=1, choices=[1, 2, 3, 4, 5, 6, 7, 8])
     parser.add_argument("--reserved-size", metavar="", type=int, help="reserved size, default is 0", default=0)
     parser.add_argument("-d", "--dir", nargs='+', action='append', help="plot dirs")
 
@@ -382,6 +384,7 @@ if __name__ == '__main__':
 
     numUnits = args.num_units
     maxFileSize = args.max_filesize * GB
+    batchMultiple = args.batch_multiple
     reservedSize = args.reserved_size
 
     commitmentAtxId = verify_license()
@@ -395,5 +398,5 @@ if __name__ == '__main__':
 
     signal.signal(signal.SIGTERM, sigterm_handler)
 
-    run = FastsmhRunner(folders, numUnits, reservedSize, commitmentAtxId, maxFileSize)
+    run = FastsmhRunner(folders, numUnits, reservedSize, commitmentAtxId, maxFileSize, batchMultiple)
     run.start()
