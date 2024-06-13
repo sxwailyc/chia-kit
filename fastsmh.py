@@ -251,7 +251,7 @@ class FastsmhRunner:
 
             for i in range(10):
                 sub_dir = os.path.join(folder, f"post_{i + 1}")
-                if os.path.exists(sub_dir) and is_directory_empty(sub_dir):
+                if os.path.exists(sub_dir) and not is_directory_empty(sub_dir):
                     continue
 
                 if not os.path.exists(sub_dir):
