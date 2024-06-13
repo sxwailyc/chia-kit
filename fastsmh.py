@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+import base64
+import binascii
 import threading
 
 import signal
@@ -57,16 +58,17 @@ def get_free(disk):
 def is_interrupt(folder):
     metadata = os.path.join(folder, METADAT_JSON_FILE)
     if not os.path.exists(metadata):
-        return False, 0, 0
+        return False, 0, 0, None
     with open(metadata) as f:
         data = json.load(f)
         NumUnits = data["NumUnits"]
         MaxFileSize = data["MaxFileSize"]
+        CommitmentAtxId = binascii.hexlify(base64.b64decode(data["CommitmentAtxId"])).decode('utf-8')
         last_file_idx = int(NumUnits * 64 * GB / MaxFileSize - 1)
         last_file = os.path.join(folder, f"postdata_{last_file_idx}.bin")
         if not os.path.exists(last_file) or os.path.getsize(last_file) < MaxFileSize:
-            return True, NumUnits, MaxFileSize
-    return False, 0, 0
+            return True, NumUnits, MaxFileSize, CommitmentAtxId
+    return False, 0, 0, None
 
 
 def is_finish(folder):
@@ -189,12 +191,12 @@ class FastsmhRunner:
             sub_folders = os.listdir(folder)
             for sub_folder in sub_folders:
                 sub_folder = os.path.join(folder, sub_folder)
-                interrupt, num_units, max_filesize = is_interrupt(sub_folder)
+                interrupt, num_units, max_filesize, commitmentAtxId = is_interrupt(sub_folder)
                 if interrupt:
                     log(f"继续运行中断的P盘任务, 目录:{sub_folder}, 图容量: {size_to_tb(num_units * 64 * GB)}TB")
-                    self.plot(sub_folder, num_units, max_filesize)
+                    self.plot(sub_folder, num_units, max_filesize, commitmentAtxId)
 
-    def plot(self, folder, num_units, max_filesize):
+    def plot(self, folder, num_units, max_filesize, commitmentAtxId):
         global current_folder, state, current_num_units, current_max_filesize
         current_folder = folder
         current_num_units = num_units
@@ -204,7 +206,7 @@ class FastsmhRunner:
         cmd = f"{self.bin} -datadir {folder} -numUnits {num_units} -maxFileSize {max_filesize}"
         log(cmd)
         os.environ['LD_LIBRARY_PATH'] = f"{os.path.join(os.path.dirname(__file__), 'bin')}/"
-        p = Popen([self.bin, "-datadir", folder, "-numUnits", f"{num_units}", "-maxFileSize", f"{max_filesize}", "-commitmentAtxId", f"{self.commitmentAtxId}", "-provider", "0"], stdout=PIPE, stderr=PIPE)
+        p = Popen([self.bin, "-datadir", folder, "-numUnits", f"{num_units}", "-maxFileSize", f"{max_filesize}", "-commitmentAtxId", f"{commitmentAtxId}", "-provider", "0"], stdout=PIPE, stderr=PIPE)
         ret_code = p.wait()
         if ret_code != 0:
             log(f"P图执行失败[{cmd}]")
@@ -256,7 +258,7 @@ class FastsmhRunner:
                     log(f"创建目录: {sub_dir}")
                     os.makedirs(sub_dir)
 
-                self.plot(sub_dir, num_units, self.maxFileSize)
+                self.plot(sub_dir, num_units, self.maxFileSize, self.commitmentAtxId)
 
                 go, num_units = self.is_continue(folder)
                 if not go:
