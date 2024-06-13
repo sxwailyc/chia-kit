@@ -361,7 +361,7 @@ if __name__ == '__main__':
     """)
 
     parser.add_argument("--num-units", metavar="", type=int, help="numUnits, default is 32", default=32)
-    parser.add_argument("--max-filesize", metavar="", type=int, help="maxFileSize, default is 34359738368", default=34359738368)
+    parser.add_argument("--max-filesize", metavar="", type=int, help="maxFileSize, default is 32", default=32)
     parser.add_argument("--reserved-size", metavar="", type=int, help="reserved size, default is 0", default=0)
     parser.add_argument("-d", "--dir", nargs='+', action='append', help="plot dirs")
 
@@ -381,7 +381,7 @@ if __name__ == '__main__':
     log(f"启动P图程序，版本[{VERSION}]")
 
     numUnits = args.num_units
-    maxFileSize = args.max_filesize
+    maxFileSize = args.max_filesize * GB
     reservedSize = args.reserved_size
 
     commitmentAtxId = verify_license()
