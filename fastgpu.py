@@ -36,7 +36,7 @@ class FastsmhGpu:
                 break
             line = line.decode('utf-8')
             line = line.replace("\n", "")
-            print(line)
+            print(line, flush=True)
 
 
 def get_system_uuid():
