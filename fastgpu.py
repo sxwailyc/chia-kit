@@ -29,9 +29,9 @@ class FastsmhGpu:
 
     def start(self):
         os.environ['LD_LIBRARY_PATH'] = f"{os.path.join(os.path.dirname(__file__), 'bin')}/"
-        p = Popen([self.bin, "-gpuServer", "-license", "yes"], stdout=PIPE, stderr=PIPE)
+        p = Popen([self.bin, "-gpuServer", "-license", "yes"], stdout=PIPE)
         while True:
-            line = p.stderr.readline()
+            line = p.stdout.readline()
             if not line:
                 break
             line = line.decode('utf-8')
