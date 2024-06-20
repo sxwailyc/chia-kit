@@ -36,7 +36,8 @@ class FastsmhGpu:
                 break
             line = line.decode('utf-8')
             line = line.replace("\n", "")
-            print(line, flush=True)
+            if line.find("Speed") > 0:
+                print(line, flush=True)
 
 
 def get_system_uuid():
@@ -113,6 +114,8 @@ if __name__ == '__main__':
     if not is_root():
         print("请切换到root用户")
         sys.exit(0)
+
+    verify_license()
 
     log(f"启动GPU程序，版本[{VERSION}]")
 
