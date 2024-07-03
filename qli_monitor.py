@@ -135,17 +135,24 @@ def rmdir(name):
 
 
 def gitpull():
-    log("chdir /data/shell/chia-kit")
-    os.chdir('/data/shell/chia-kit')
-    log("git pull")
-    os.system('git pull')
+    pull('/data/shell/chia-kit')
+
+
+def pull(dir_name):
+    log(f"chdir {dir_name}")
+    os.chdir(dir_name)
+    result = subprocess.run(['git', 'pull'], capture_output=True, text=True)
+    # 检查命令执行结果
+    if result.returncode == 0:
+        log("git pull successful")
+        log(result.stdout)
+    else:
+        log("git pull failed")
+        log(result.stderr)
 
 
 def minepull():
-    log("chdir /data/app/mine")
-    os.chdir('/data/app/mine')
-    log("git pull")
-    os.system('git pull')
+    pull('/data/app/mine')
 
 
 def upgrade(url):
