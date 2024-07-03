@@ -141,6 +141,13 @@ def gitpull():
     os.system('git pull')
 
 
+def minepull():
+    log("chdir /data/app/mine")
+    os.chdir('/data/app/mine')
+    log("git pull")
+    os.system('git pull')
+
+
 def upgrade(url):
     execute({
         'cmd': 'stop',
@@ -208,6 +215,8 @@ def execute(command):
         run_script(script)
     elif cmd == 'gitpull':
         gitpull()
+    elif cmd == 'minepull':
+        minepull()
 
 
 def get_state(client):
