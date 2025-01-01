@@ -78,7 +78,7 @@ def split_line(line):
 
 
 def get_usage_infos():
-    cmd = "df -lmT | grep /dev/sd"
+    cmd = "df -lmT | grep ^/dev/"
     out = getoutput(cmd)
     lines = out.split("\n")
     usage_infos = {}
