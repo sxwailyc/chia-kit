@@ -17,7 +17,7 @@ import cpu_util
 
 DOWNLOAD_DIR = "/data/app/qli-app/"
 
-CLIENTS = ['qli', 'bitnet', 'xcb', 'hac', 'mangonote']
+CLIENTS = ['qli', 'bitnet', 'xcb', 'hac', 'mangonote', 'aleo']
 
 
 def log(msg):
@@ -135,10 +135,24 @@ def rmdir(name):
 
 
 def gitpull():
-    log("chdir /data/shell/chia-kit")
-    os.chdir('/data/shell/chia-kit')
-    log("git pull")
-    os.system('git pull')
+    pull('/data/shell/chia-kit')
+
+
+def pull(dir_name):
+    log(f"chdir {dir_name}")
+    os.chdir(dir_name)
+    result = subprocess.run(['git', 'pull'], capture_output=True, text=True)
+    # 检查命令执行结果
+    if result.returncode == 0:
+        log("git pull successful")
+        log(result.stdout)
+    else:
+        log("git pull failed")
+        log(result.stderr)
+
+
+def minepull():
+    pull('/data/app/mine')
 
 
 def upgrade(url):
@@ -208,6 +222,8 @@ def execute(command):
         run_script(script)
     elif cmd == 'gitpull':
         gitpull()
+    elif cmd == 'minepull':
+        minepull()
 
 
 def get_state(client):
