@@ -142,8 +142,13 @@ def get_chia_count(base_dir):
 
 
 def format_device(device):
-    if device[-1].isdigit():
-        device = device[:-1]
+    if device.startswith("/dev/sd"):
+        if device[-1].isdigit():
+            device = device[:-1]
+    elif device.startswith("/dev/nvme"):
+        if device[-1].isdigit():
+            device = device[:-2]
+
     return device
 
 
