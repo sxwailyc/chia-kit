@@ -33,7 +33,7 @@ def to_int(s):
 def call_hdsentinel(devname, print_info):
     """call hdsentinel"""
     cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "hdsentinel-019c-x64")
-    p = Popen([cmd, "-dev", devname, "-solid"], stdout=PIPE)
+    p = Popen([cmd, "-dev", devname], stdout=PIPE)
     model_id, size, temperature, health, device, serial_no, power_time, total_write = None, 0, 0, 0, None, None, 0, 0
     while True:
         line = p.stdout.readline()
