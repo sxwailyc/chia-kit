@@ -234,7 +234,7 @@ class Base():
         data = json.dumps({
             "secret": self.secret,
             "machine": machine_info,
-            "disks": disk_infos
+            "ssds": disk_infos
         })
         try_times = 0
         print(machine_info)
