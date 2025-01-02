@@ -98,11 +98,11 @@ def parse_total_write(s):
     if s.endswith("TB"):
         print(s)
         v = to_float(s.replace('TB', '').replace(",", ''))
-        return int(v * 1024 * 1024 * 1024)
+        return int(v * 1024)
 
     if s.endswith("GB"):
         v = to_float(s.replace('GB', '').replace(",", ''))
-        return int(v * 1024 * 1024)
+        return int(v)
     return 0
 
 
