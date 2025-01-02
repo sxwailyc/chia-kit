@@ -26,7 +26,17 @@ def to_int(s):
     try:
         s = s.strip()
         return int(s)
-    except:
+    except Exception as e:
+        raise e
+        return 0
+
+
+def to_float(s):
+    try:
+        s = s.strip()
+        return float(s)
+    except Exception as e:
+        raise e
         return 0
 
 
@@ -88,12 +98,13 @@ def parse_power_time(s):
 
 def parse_total_write(s):
     if s.endswith("TB"):
-        v = to_int(s.replace('TB', ''))
-        return v * 1024 * 1024 * 1024
+        print(s)
+        v = to_float(s.replace('TB', '').replace(",", ''))
+        return int(v * 1024 * 1024 * 1024)
 
     if s.endswith("GB"):
-        v = to_int(s.replace('GB', ''))
-        return v * 1024 * 1024
+        v = to_float(s.replace('GB', '').replace(",", ''))
+        return int(v * 1024 * 1024)
     return 0
 
 
@@ -253,6 +264,7 @@ def main(secret, host_name, print_info):
         all_size += size
         all_usage += usage
         disk_info["usage"] = usage
+        disk_info["size"] = size
         disk_info["plot_count"] = plot_count
         disk_info["nossd_count"] = nossd_count
         disk_info["mount_point"] = mount_point
