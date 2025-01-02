@@ -61,6 +61,8 @@ def call_hdsentinel(devname, print_info):
         key = key.strip()
         if key == 'HDD Model ID':
             model_id = value
+            if not model_id or model_id == '?':
+                continue
         elif key == 'HDD Serial No':
             serial_no = value
         elif key == 'Temperature':
@@ -247,19 +249,3 @@ class Base():
                 time.sleep(10)
             try_times += 1
 
-
-def acquire_port_lock(port):
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind(('localhost', port))
-        sock.listen(1)
-        fcntl.flock(sock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        return sock
-    except IOError:
-        log(f"Another process is already listening on port {port}. Exiting.")
-        exit(1)
-
-
-def release_port_lock(sock):
-    fcntl.flock(sock.fileno(), fcntl.LOCK_UN)
-    sock.close()
