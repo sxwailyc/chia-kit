@@ -24,6 +24,7 @@ def log(msg):
 
 def to_int(s):
     try:
+        s = s.strip()
         return int(s)
     except:
         return 0
@@ -33,30 +34,65 @@ def call_hdsentinel(devname, print_info):
     """call hdsentinel"""
     cmd = os.path.join(os.path.join(os.path.dirname(__file__), "bin"), "hdsentinel-019c-x64")
     p = Popen([cmd, "-dev", devname, "-solid"], stdout=PIPE)
-    disks = []
-    # device, temperature, health, power_time, model_id, serial_no, size
+    model_id, size, temperature, health, device, serial_no, power_time, total_write = None, 0, 0, 0, None, None, 0, 0
     while True:
         line = p.stdout.readline()
         if not line:
             break
         line = line.decode('utf-8')
         line = line.replace("\n", "")
-        datas = split_line(line)
-        if len(datas) < 7:
+        datas = split_line(line, ": ")
+        if len(datas) != 2:
             continue
 
         if print_info:
             print(line)
 
-        return {
-            "model_id": datas[4],
-            "size": to_int(datas[6]),
-            "temperature": to_int(datas[1]),
-            "health": to_int(datas[2]),
-            "device": datas[0],
-            "serial_no": datas[5],
-            "power_time": to_int(datas[3])
-        }
+        key = datas[0]
+        value = datas[1]
+        if key == 'HDD Model ID':
+            model_id = value
+        elif key == 'HDD Serial No':
+            serial_no = value
+        elif key == 'Temperature':
+            temperature = to_int(value.replace('°C', ''))
+        elif key == 'Health':
+            health = to_int(value.replace('%', ''))
+        elif key == 'Power on time':
+            power_time = parse_power_time(value)
+        elif key == 'Total written':
+            total_write = parse_total_write(value)
+
+    return {
+        "model_id": model_id,
+        "temperature": temperature,
+        "health": health,
+        "serial_no": serial_no,
+        "power_time": power_time,
+        "total_write": total_write,
+    }
+
+
+def parse_power_time(s):
+    datas = s.split(",")
+    powter_time = 0
+    for data in datas:
+        if data.endswith("days"):
+            powter_time += 24 * to_int(data.replace('days', ''))
+        if data.endswith("hours"):
+            powter_time += to_int(data.replace('hours', ''))
+    return powter_time
+
+
+def parse_total_write(s):
+    if s.endswith("TB"):
+        v = to_int(s.replace('TB', ''))
+        return v * 1024 * 1024 * 1024
+
+    if s.endswith("GB"):
+        v = to_int(s.replace('GB', ''))
+        return v * 1024 * 1024
+    return 0
 
 
 def get_local_ip():
@@ -68,8 +104,8 @@ def get_local_ip():
         return "127.0.0.1"
 
 
-def split_line(line):
-    datas = line.split(" ")
+def split_line(line, separator=" "):
+    datas = line.split(separator)
     ndatas = []
     for data in datas:
         if data:
@@ -92,11 +128,13 @@ def get_usage_infos():
         filesystem = datas[1]
         if filesystem == 'fuseblk':
             filesystem = 'ntfs'
+        size = to_int(datas[2])
         usage = to_int(datas[3])
         mount_point = datas[6]
         if mount_point == '/' or mount_point.startswith("/boot/"):
             continue
         usage_infos[format_device(device)] = {
+            'size': size,
             'usage': usage,
             'mount_point': mount_point,
             'filesystem': filesystem
@@ -201,7 +239,7 @@ def main(secret, host_name, print_info):
         disk_info = call_hdsentinel(devname, print_info)
         if not disk_info:
             continue
-        size = disk_info['size']
+        size = usage_info.get('size', 0)
         usage = usage_info.get('usage', 0)
         mount_point = usage_info.get('mount_point', "")
         filesystem = usage_info.get('filesystem', "")
