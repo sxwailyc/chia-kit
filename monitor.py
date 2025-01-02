@@ -50,6 +50,7 @@ def call_hdsentinel(devname, print_info):
 
         key = datas[0]
         value = datas[1]
+        print(key, value)
         if key == 'HDD Model ID':
             model_id = value
         elif key == 'HDD Serial No':
