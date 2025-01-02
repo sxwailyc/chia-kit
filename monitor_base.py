@@ -59,7 +59,6 @@ def call_hdsentinel(devname, print_info):
         key = datas[0]
         value = datas[1]
         key = key.strip()
-        print("[%s], [%s]" % (key, value))
         if key == 'HDD Model ID':
             model_id = value
         elif key == 'HDD Serial No':
@@ -96,7 +95,6 @@ def parse_power_time(s):
 
 def parse_total_write(s):
     if s.endswith("TB"):
-        print(s)
         v = to_float(s.replace('TB', '').replace(",", ''))
         return int(v * 1024 * 1024)
 
@@ -238,8 +236,6 @@ class Base():
             "ssds": disk_infos
         })
         try_times = 0
-        print(machine_info)
-        print(disk_infos)
         while try_times < 3:
             try:
                 log(f"start to report, try times {try_times}")
