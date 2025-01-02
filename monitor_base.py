@@ -221,7 +221,6 @@ class Base():
 
         self.report(machine_info, ndisk_infos)
 
-
     def is_need_handle(self, disk):
         pass
 
@@ -238,6 +237,8 @@ class Base():
             "disks": disk_infos
         })
         try_times = 0
+        print(machine_info)
+        print(disk_infos)
         while try_times < 3:
             try:
                 log(f"start to report, try times {try_times}")
