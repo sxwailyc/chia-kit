@@ -24,8 +24,7 @@ def to_int(s):
     try:
         s = s.strip()
         return int(s)
-    except Exception as e:
-        raise e
+    except:
         return 0
 
 
@@ -33,8 +32,7 @@ def to_float(s):
     try:
         s = s.strip()
         return float(s)
-    except Exception as e:
-        raise e
+    except:
         return 0
 
 
@@ -62,11 +60,13 @@ def call_hdsentinel(devname, print_info):
         if key == 'HDD Model ID':
             model_id = value
             if not model_id or model_id == '?':
-                continue
+                return None
         elif key == 'HDD Serial No':
             serial_no = value
         elif key == 'Temperature':
             temperature = to_int(value.replace('°C', ''))
+            if not temperature:
+                return None
         elif key == 'Health':
             health = to_int(value.replace('%', ''))
         elif key == 'Power on time':
