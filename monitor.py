@@ -210,6 +210,7 @@ def report(secret, machine_info, disk_infos):
         "machine": machine_info,
         "disks": disk_infos
     })
+    print(disk_infos)
     try_times = 0
     while try_times < 3:
         try:
