@@ -201,6 +201,7 @@ class Base():
             disk_count += 1
             all_size += size
             all_usage += usage
+            disk_info["device"] = devname
             disk_info["usage"] = usage
             disk_info["size"] = size
             disk_info["mount_point"] = mount_point
