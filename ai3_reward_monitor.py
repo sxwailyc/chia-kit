@@ -18,6 +18,7 @@ CLUSTER_FARM_SIZE_KEY = "subspace_farmer::commands::cluster::farmer:   Allocated
 CLUSTER_FARM_DIRECTORY_KEY = "subspace_farmer::commands::cluster::farmer:   Directory:"
 
 SUCCESS_REWARD_KEY = "Successfully signed reward hash"
+BLOCK_REWARD_KEY = "Hash now"
 
 
 GB = 1024 * 1024 * 1024
@@ -41,6 +42,15 @@ def get_reward_hash(s):
         farm_index = get_farm_index(s)
         return farm_index, reward_hash.strip()
     return 0, None
+
+
+def get_block_hash(s):
+    start = s.find(BLOCK_REWARD_KEY)
+    if start > 0:
+        s = s[start + len(BLOCK_REWARD_KEY):]
+        block_hash = s[:s.find(",")]
+        return block_hash.strip()
+    return None
 
 
 def format_size(farm_size):
@@ -127,9 +137,10 @@ class Ai3RewardHandler(FileSystemEventHandler):
         self.current_allocated = 0
         self.current_farm_index = 0
 
-    def report_reward(self, farm_index, reward_hash):
+    def report_reward(self, reward_type, farm_index, reward_hash):
         data = json.dumps({
             "secret": self.secret,
+            "type": reward_type,
             "farm_index": farm_index,
             "hostname": self.hostname,
             "reward_hash": reward_hash
@@ -156,7 +167,10 @@ class Ai3RewardHandler(FileSystemEventHandler):
             self.report_farm(directory)
         elif line.find(SUCCESS_REWARD_KEY) > 0:
             farm_index, reward_hash = get_reward_hash(line)
-            self.report_reward(farm_index, reward_hash)
+            self.report_reward(1, farm_index, reward_hash)
+        elif line.find(BLOCK_REWARD_KEY) > 0:
+            reward_hash = get_block_hash(line)
+            self.report_reward(2, 0, reward_hash)
 
     def on_modified(self, event):
         if event.src_path == self.path:
@@ -176,13 +190,8 @@ class Ai3RewardHandler(FileSystemEventHandler):
 
 
 if __name__ == "__main__":
-    #print(get_reward_hash(
-    #    '2025-01-02T08:48:38.964539Z  INFO {farm_index=4}: subspace_farmer::single_disk_farm::reward_signing: Successfully signed reward hash 0xf02fc014d9abbd24ad50bc6cd9ffa6951acda51bfd5465ecad4de7e7fbf72b79'))
-    #sys.exit(0)
-    # print(get_farm_size(
-    #     '2025-01-03T03:29:04.400235Z  INFO {farm_index=0}: subspace_farmer::commands::farm:   Allocated space: 5.7 TiB (6.3 TB)'))
-    # print(get_farm_directory(
-    #     '2025-01-03T03:29:04.400237Z  INFO {farm_index=0}: subspace_farmer::commands::farm:   Directory: /mnt/spm01'))
+    print(get_block_hash('2025-01-03T13:46:05.596762Z  INFO Consensus: subspace: 🔖 Pre-sealed block for proposal at 816817. Hash now 0x04dcb584ae13a26bdf9f5875dab6248dc072a619869c74ffb64d5d519afcaeda, previously 0xd39c48b8e2f09b4fc34b6066e9b0e2d951f10d577f910fb9b7b0ca00e9716e61.'))
+    sys.exit(0)
     parser = argparse.ArgumentParser(description="""
            This script is for monitor the ai3 farm.
         """)
