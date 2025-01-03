@@ -187,7 +187,7 @@ if __name__ == "__main__":
            This script is for monitor the ai3 farm.
         """)
     parser.add_argument("--secret", metavar="", help="secret, use to post to server ")
-    parser.add_argument("--log-path", metavar="", help="log path, use to watch farm event ")
+    parser.add_argument("--log-path", metavar="", help="log path, use to watch farm event ", default="/data/log/subspace_farmer.out.log")
     parser.add_argument("--cluster", action="store_true", help="ai3 whether run on cluster mode, default is True", default=True)
 
     args = parser.parse_args()
