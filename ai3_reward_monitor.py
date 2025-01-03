@@ -188,12 +188,13 @@ if __name__ == "__main__":
         """)
     parser.add_argument("--secret", metavar="", help="secret, use to post to server ")
     parser.add_argument("--log-path", metavar="", help="log path, use to watch farm event ", default="/data/log/subspace_farmer.out.log")
-    parser.add_argument("--cluster", action="store_true", help="ai3 whether run on cluster mode, default is True", default=True)
+    parser.add_argument("--cluster", action="store_true", help="ai3 whether run on cluster mode, default is True", default=False)
 
     args = parser.parse_args()
     secret = args.secret
     log_path = args.log_path
     cluster = args.cluster
+    print(cluster)
     if not secret:
         print("please input secret with --secret")
         sys.exit(0)
