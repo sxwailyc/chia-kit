@@ -190,8 +190,8 @@ class Ai3RewardHandler(FileSystemEventHandler):
 
 
 if __name__ == "__main__":
-    print(get_block_hash('2025-01-03T13:46:05.596762Z  INFO Consensus: subspace: 🔖 Pre-sealed block for proposal at 816817. Hash now 0x04dcb584ae13a26bdf9f5875dab6248dc072a619869c74ffb64d5d519afcaeda, previously 0xd39c48b8e2f09b4fc34b6066e9b0e2d951f10d577f910fb9b7b0ca00e9716e61.'))
-    sys.exit(0)
+    #print(get_block_hash('2025-01-03T13:46:05.596762Z  INFO Consensus: subspace: 🔖 Pre-sealed block for proposal at 816817. Hash now 0x04dcb584ae13a26bdf9f5875dab6248dc072a619869c74ffb64d5d519afcaeda, previously 0xd39c48b8e2f09b4fc34b6066e9b0e2d951f10d577f910fb9b7b0ca00e9716e61.'))
+    #sys.exit(0)
     parser = argparse.ArgumentParser(description="""
            This script is for monitor the ai3 farm.
         """)
