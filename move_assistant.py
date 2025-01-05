@@ -57,7 +57,7 @@ def remove_one_plot(_dir, grep):
     return False
 
 
-def move(source, target, sub_dir_name, current_dirs, current_files, suffix):
+def move(source, target, sub_dir_name, current_dirs, error_dirs, current_files, suffix):
     try:
         dist = os.path.join(target, sub_dir_name)
         if not os.path.exists(dist):
@@ -83,6 +83,7 @@ def move(source, target, sub_dir_name, current_dirs, current_files, suffix):
 
     except Exception as e:
         log('move %s:%s' % (print_error('error'), e))
+        error_dirs.append(target)
     finally:
         current_dirs.remove(target)
         current_files.remove(source)
@@ -191,13 +192,15 @@ class MoveAssistant:
         self.auto_remove_grep = auto_remove_grep
         self.pool = multiprocessing.Pool(max_concurrency)  # processing pool
         self.current_dirs = multiprocessing.Manager().list()
+        self.error_dirs = multiprocessing.Manager().list()
         self.current_files = multiprocessing.Manager().list()
+
 
     def add_move_task(self, plot_name, target):
         self.current_dirs.append(target)
         self.current_files.append(plot_name)
         self.pool.apply_async(move, (
-            plot_name, target, self.sub_dir_name, self.current_dirs, self.current_files, self.suffix))
+            plot_name, target, self.sub_dir_name, self.current_dirs, self.error_dirs, self.current_files, self.suffix))
         log("add move task success:%s" % plot_name)
         return True
 
@@ -257,6 +260,9 @@ class MoveAssistant:
                 continue
             max_file_count = hdd_dir_info['max_file_count']
             if hdd_dir in self.current_dirs:
+                continue
+            if hdd_dir in self.error_dirs:
+                log("hdd dir is in error dirs:%s" % hdd_dir)
                 continue
             enable, free = self.is_hdd_dir_enable(hdd_dir, max_file_count, file_size)
             if not enable:
