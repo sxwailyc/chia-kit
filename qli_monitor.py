@@ -17,7 +17,7 @@ import cpu_util
 
 DOWNLOAD_DIR = "/data/app/qli-app/"
 
-CLIENTS = ['qli', 'bitnet', 'xcb', 'hac', 'mangonote', 'aleo']
+CLIENTS = ['qli', 'subspace_farmer', 'subspace_node', 'ai3_reward_monitor', 'ai3_node_monitor']
 
 
 def log(msg):

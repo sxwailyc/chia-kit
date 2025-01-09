@@ -192,8 +192,8 @@ class Ai3RewardHandler(threading.Thread, FileSystemEventHandler):
                 self.handle_line(line)
 
     def on_any_event(self, event):
+        global EXIT
         if event.event_type == 'closed':
-            global EXIT
             EXIT = True
 
 
