@@ -33,10 +33,6 @@ def log(msg):
     sys.stdout.flush()
 
 
-def get_last_modified_time(path):
-    return os.stat(path).st_mtime
-
-
 def get_reward_hash(s):
     start = s.find(SUCCESS_REWARD_KEY)
     if start > 0:
@@ -99,6 +95,13 @@ def get_farm_directory(s, keyword):
     return None
 
 
+def get_line_count(path):
+    with open(path, 'r') as file:
+        lines = file.readlines()
+        line_count = len(lines)
+    return line_count
+
+
 class Ai3RewardHandler(threading.Thread, FileSystemEventHandler):
 
     def __init__(self, secret, path, cluster):
@@ -107,7 +110,6 @@ class Ai3RewardHandler(threading.Thread, FileSystemEventHandler):
         self.secret = secret
         self.hostname = socket.gethostname()
         self.path = path
-        self.last_modified_time = get_last_modified_time(path)
         self.current_farm_id = None
         self.current_farm_index = 0
         self.current_allocated = 0
@@ -177,20 +179,17 @@ class Ai3RewardHandler(threading.Thread, FileSystemEventHandler):
             self.report_reward(2, 0, reward_hash)
 
     def run(self):
-        while True:
-            new_modified_time = get_last_modified_time(self.path)
-            if new_modified_time > self.last_modified_time:
-                with open(self.path, 'r') as f:
-                    f.seek(0, 2)  # 移动到文件末尾
-                    while True:
-                        line = f.readline()
-                        if not line:
-                            time.sleep(0.1)  # 等待文件更新
-                            continue
-                        line = line.strip()
-                        print(line)  # 打印新的日志行
-                        self.handle_line(line)
-                        self.last_modified_time = new_modified_time
+        with open(self.path, 'r') as f:
+            if get_line_count(self.path) > 5:
+                f.seek(0, 2)  # 移动到文件末尾
+            while True:
+                line = f.readline()
+                if not line:
+                    time.sleep(0.1)  # 等待文件更新
+                    continue
+                line = line.strip()
+                print(line)  # 打印新的日志行
+                self.handle_line(line)
 
     def on_any_event(self, event):
         if event.event_type == 'closed':
