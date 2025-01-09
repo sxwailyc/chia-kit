@@ -171,7 +171,7 @@ def is_root():
 
 class Base():
 
-    def __init__(self, secret, host_name, print_info, report_url, disk_key='ssds'):
+    def __init__(self, secret, host_name, print_info, report_url,):
         self.secret = secret
         if not host_name:
             host_name = socket.gethostname()
@@ -179,7 +179,6 @@ class Base():
         self.host_name = host_name
         self.print_info = print_info
         self.report_url = report_url
-        self.disk_key = disk_key
 
     def run(self):
         usage_infos = get_usage_infos()
@@ -236,7 +235,7 @@ class Base():
         data = json.dumps({
             "secret": self.secret,
             "machine": machine_info,
-            self.disk_key: disk_infos
+            "ssds": disk_infos
         })
         try_times = 0
         while try_times < 3:

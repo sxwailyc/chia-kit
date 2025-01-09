@@ -5,6 +5,7 @@ import json
 import socket
 import argparse
 import requests
+import threading
 from datetime import datetime
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -24,6 +25,7 @@ BLOCK_REWARD_KEY = "Hash now"
 GB = 1024 * 1024 * 1024
 TB = GB * 1024
 
+EXIT = False
 
 def log(msg):
     s = "[%s]%s" % (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), msg)
@@ -97,9 +99,10 @@ def get_farm_directory(s, keyword):
     return None
 
 
-class Ai3RewardHandler(FileSystemEventHandler):
+class Ai3RewardHandler(threading.Thread, FileSystemEventHandler):
 
     def __init__(self, secret, path, cluster):
+        threading.Thread.__init__(self, daemon=True)
         FileSystemEventHandler.__init__(self)
         self.secret = secret
         self.hostname = socket.gethostname()
@@ -111,6 +114,7 @@ class Ai3RewardHandler(FileSystemEventHandler):
         self.farm_id_keyword = CLUSTER_FARM_ID_KEY if cluster else FARM_ID_KEY
         self.farm_size_keyword = CLUSTER_FARM_SIZE_KEY if cluster else FARM_SIZE_KEY
         self.farm_directory_keyword = CLUSTER_FARM_DIRECTORY_KEY if cluster else FARM_DIRECTORY_KEY
+        self.exit = False
 
     def report_farm(self, directory):
         data = json.dumps({
@@ -172,8 +176,8 @@ class Ai3RewardHandler(FileSystemEventHandler):
             reward_hash = get_block_hash(line)
             self.report_reward(2, 0, reward_hash)
 
-    def on_modified(self, event):
-        if event.src_path == self.path:
+    def run(self):
+        while True:
             new_modified_time = get_last_modified_time(self.path)
             if new_modified_time > self.last_modified_time:
                 with open(self.path, 'r') as f:
@@ -188,10 +192,13 @@ class Ai3RewardHandler(FileSystemEventHandler):
                         self.handle_line(line)
                         self.last_modified_time = new_modified_time
 
+    def on_any_event(self, event):
+        if event.event_type == 'closed':
+            global EXIT
+            EXIT = True
+
 
 if __name__ == "__main__":
-    #print(get_block_hash('2025-01-03T13:46:05.596762Z  INFO Consensus: subspace: 🔖 Pre-sealed block for proposal at 816817. Hash now 0x04dcb584ae13a26bdf9f5875dab6248dc072a619869c74ffb64d5d519afcaeda, previously 0xd39c48b8e2f09b4fc34b6066e9b0e2d951f10d577f910fb9b7b0ca00e9716e61.'))
-    #sys.exit(0)
     parser = argparse.ArgumentParser(description="""
            This script is for monitor the ai3 farm.
         """)
@@ -215,12 +222,17 @@ if __name__ == "__main__":
     log(f'log path {log_path}')
 
     event_handler = Ai3RewardHandler(secret, log_path, cluster)
+    event_handler.start()
     observer = Observer()
     observer.schedule(event_handler, log_path, recursive=False)
     observer.start()
     try:
         while True:
             time.sleep(1)
+            if EXIT:
+                observer.stop()
+                print('exit')
+                sys.exit(0)
     except KeyboardInterrupt:
         observer.stop()
     observer.join()
