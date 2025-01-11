@@ -195,7 +195,6 @@ class MoveAssistant:
         self.error_dirs = multiprocessing.Manager().list()
         self.current_files = multiprocessing.Manager().list()
 
-
     def add_move_task(self, plot_name, target):
         self.current_dirs.append(target)
         self.current_files.append(plot_name)
