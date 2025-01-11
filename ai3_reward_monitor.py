@@ -1,4 +1,6 @@
-import os
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import sys
 import time
 import json
@@ -6,7 +8,7 @@ import socket
 import argparse
 import requests
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -21,16 +23,29 @@ CLUSTER_FARM_DIRECTORY_KEY = "subspace_farmer::commands::cluster::farmer:   Dire
 SUCCESS_REWARD_KEY = "Successfully signed reward hash"
 BLOCK_REWARD_KEY = "Hash now"
 
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 GB = 1024 * 1024 * 1024
 TB = GB * 1024
 
 EXIT = False
 
+
 def log(msg):
-    s = "[%s]%s" % (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), msg)
+    s = "[%s]%s" % (datetime.now().strftime(DATE_FORMAT), msg)
     print(s)
     sys.stdout.flush()
+
+
+def print_localtime(line):
+    # noinspection PyBroadException
+    try:
+        s = line[:19]
+        d = datetime.strptime(s, "%Y-%m-%dT%H:%M:%S")
+        local_time = d + timedelta(hours=8)
+        print('%s%s' % (local_time.strftime(DATE_FORMAT), line[19:]))
+    except:
+        print(line)
 
 
 def get_reward_hash(s):
@@ -188,7 +203,7 @@ class Ai3RewardHandler(threading.Thread, FileSystemEventHandler):
                     time.sleep(0.1)  # 等待文件更新
                     continue
                 line = line.strip()
-                print(line)  # 打印新的日志行
+                print_localtime(line)  # 打印新的日志行
                 self.handle_line(line)
 
     def on_any_event(self, event):
@@ -198,12 +213,15 @@ class Ai3RewardHandler(threading.Thread, FileSystemEventHandler):
 
 
 if __name__ == "__main__":
+
     parser = argparse.ArgumentParser(description="""
            This script is for monitor the ai3 farm.
         """)
     parser.add_argument("--secret", metavar="", help="secret, use to post to server ")
-    parser.add_argument("--log-path", metavar="", help="log path, use to watch farm event ", default="/data/log/subspace_farmer.out.log")
-    parser.add_argument("--cluster", action="store_true", help="ai3 whether run on cluster mode, default is True", default=False)
+    parser.add_argument("--log-path", metavar="", help="log path, use to watch farm event ",
+                        default="/data/log/subspace_farmer.out.log")
+    parser.add_argument("--cluster", action="store_true", help="ai3 whether run on cluster mode, default is True",
+                        default=False)
 
     args = parser.parse_args()
     secret = args.secret
