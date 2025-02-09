@@ -171,7 +171,7 @@ def is_root():
 
 class Base():
 
-    def __init__(self, secret, host_name, print_info, report_url,):
+    def __init__(self, secret, host_name, print_info, report_url):
         self.secret = secret
         if not host_name:
             host_name = socket.gethostname()
