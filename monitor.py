@@ -66,7 +66,7 @@ def is_harvester_alive():
 class ChiaMonitor(Base):
 
     def __init__(self, secret, host_name, print_info):
-        super().__init__(secret, host_name, print_info, "https://api.mingyan.com/api/chia/monitor")
+        super().__init__(secret, host_name, print_info, "https://api.mingyan.com/api/chia/monitor", "disks")
         self.all_plot_count = 0
         self.all_nossd_count = 0
 
