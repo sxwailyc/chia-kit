@@ -68,7 +68,7 @@ def move(source, target, sub_dir_name, current_dirs, current_files, suffix):
             log("dist temp file exist:%s" % dist_temp)
             os.remove(dist_temp)
         filesize = os.path.getsize(source)
-        log("start move %s[%.2fGB] to %s" % (source, size_to_gb(filesize), dist))
+        log("⏩ start move %s[%.2fGB] to %s" % (source, size_to_gb(filesize), dist))
         start = time.time()
         shutil.move(source, dist_temp)
         if os.path.exists(dist_name):
@@ -78,7 +78,7 @@ def move(source, target, sub_dir_name, current_dirs, current_files, suffix):
         os.renames(dist_temp, dist_name)
         cost_time = time.time() - start
         speed = filesize / cost_time
-        log("move %s [file: %s, size: %.2fGB, cost time: %.2fs, speed: %.2fMB/s]" % (
+        log("✅ move %s [file: %s, size: %.2fGB, cost time: %.2fs, speed: %.2fMB/s]" % (
             print_success('success'), source, size_to_gb(filesize), cost_time, size_to_mb(speed)))
 
     except Exception as e:
