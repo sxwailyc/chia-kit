@@ -59,7 +59,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    action = args.action
     source_dir = args.source_dir
     target_dir = args.target_dir
     sync_files(source_dir, target_dir)
