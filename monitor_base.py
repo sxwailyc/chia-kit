@@ -156,10 +156,8 @@ def get_usage_infos():
 
 def is_ssd(devname):
     cmd = "cat /sys/block/%s/queue/rotational" % devname.split('/')[-1]
-    print(cmd)
     out = getoutput(cmd)
-    print(out)
-    return False
+    return out == "0"
 
 
 def format_device(device):
