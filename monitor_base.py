@@ -153,12 +153,14 @@ def get_usage_infos():
 
     return usage_infos
 
+
 def is_ssd(devname):
     cmd = "cat /sys/block/%s/queue/rotational" % devname
     print(cmd)
     out = getoutput(cmd)
     print(out)
     return False
+
 
 def format_device(device):
     if device.startswith("/dev/sd"):
@@ -197,7 +199,7 @@ class Base():
             disk_info = call_hdsentinel(devname, self.print_info)
             if not disk_info:
                 continue
-            if not self.is_need_handle(self.is_ssd(devname)):
+            if not self.is_need_handle(is_ssd(devname)):
                 continue
 
             size = usage_info.get('size', 0)
