@@ -24,11 +24,8 @@ class Ai3Monitor(Base):
         self.all_plot_count = 0
         self.all_nossd_count = 0
 
-    def is_need_handle(self, disk):
-        total_write = disk['total_write']
-        if total_write <= 0:
-            return False
-        return True
+    def is_need_handle(self, is_ssd):
+        return is_ssd
 
 
 def acquire_port_lock(port):
