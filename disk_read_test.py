@@ -44,7 +44,7 @@ def main():
 
         test_cmd = "time dd if=/dev/%s of=/dev/sdc1 bs=1M count=1000 iflag=direct" % devname
         print(test_cmd)
-        print(getoutput(test_cmd))
+        print(getoutput(test_cmd, shell=True))
 
 
 if __name__ == '__main__':
