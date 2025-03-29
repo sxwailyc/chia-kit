@@ -1,8 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from subprocess import getoutput
+import os
 
+from subprocess import Popen, PIPE, getoutput
 
 def split_line(line, separator=" "):
     datas = line.split(separator)
@@ -24,6 +25,18 @@ def format_device(device):
     return device
 
 
+def test(devname):
+    """test"""
+    p = Popen(["time", "dd", "if=/dev/%s" % devname, "bs=1M", "count=1000", "iflag=direct"], stdout=PIPE)
+    while True:
+        line = p.stdout.readline()
+        if not line:
+            break
+        line = line.decode('utf-8')
+        line = line.replace("\n", "")
+        print(line)
+
+
 def main():
     cmd = "df -lmT | grep ^/dev/"
     out = getoutput(cmd)
@@ -41,10 +54,8 @@ def main():
             continue
 
         devname = format_device(device)
-
-        test_cmd = "time dd if=/dev/%s of=/dev/sdc1 bs=1M count=1000 iflag=direct" % devname
-        print(test_cmd)
-        print(getoutput(test_cmd, shell=True))
+        print(devname)
+        test(test)
 
 
 if __name__ == '__main__':
