@@ -27,7 +27,7 @@ def format_device(device):
 
 def test(devname):
     """test"""
-    p = Popen(["time", "dd", "if=/dev/%s" % devname, "bs=1M", "count=1000", "iflag=direct"], stdout=PIPE)
+    p = Popen(["time", "dd", "if=/dev/%s" % devname, "bs=1M", "count=1000", "iflag=direct"], stdout=PIPE, shell=True)
     while True:
         line = p.stdout.readline()
         if not line:
