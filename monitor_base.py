@@ -205,6 +205,12 @@ class Base():
             mount_point = usage_info.get('mount_point', "")
             filesystem = usage_info.get('filesystem', "")
 
+            try:
+                self.handle_single_disk(disk_info)
+            except OSError as e:
+                print(e)
+                continue
+
             disk_count += 1
             all_size += size
             all_usage += usage
@@ -213,8 +219,6 @@ class Base():
             disk_info["size"] = size
             disk_info["mount_point"] = mount_point
             disk_info["filesystem"] = filesystem
-
-            self.handle_single_disk(disk_info)
 
             ndisk_infos.append(disk_info)
 
