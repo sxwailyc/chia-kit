@@ -155,6 +155,8 @@ def get_usage_infos():
 
 
 def is_ssd(devname):
+    if devname.find('nvme') > 0:
+        return True
     cmd = "cat /sys/block/%s/queue/rotational" % devname.split('/')[-1]
     out = getoutput(cmd)
     return out == "0"
